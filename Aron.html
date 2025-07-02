@@ -8,6 +8,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --theme-color: #4f46e5;
+            --theme-color-translucent: #4f46e533;
+        }
         body {
             font-family: 'Inter', sans-serif;
             background: #0a0a0a;
@@ -28,13 +32,9 @@
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .chat-container::-webkit-scrollbar, .code-output::-webkit-scrollbar, .scrollable-content::-webkit-scrollbar {
-            width: 6px;
-        }
-        .chat-container::-webkit-scrollbar-thumb, .code-output::-webkit-scrollbar-thumb, .scrollable-content::-webkit-scrollbar-thumb {
-            background-color: #4f46e5;
-            border-radius: 20px;
-        }
+        .scrollable-content::-webkit-scrollbar { width: 6px; }
+        .scrollable-content::-webkit-scrollbar-thumb { background-color: var(--theme-color); border-radius: 20px; }
+        
         .spinner {
             width: 20px;
             height: 20px;
@@ -44,90 +44,99 @@
             animation: spin 1s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .glow-effect {
-            box-shadow: 0 0 15px rgba(79, 70, 229, 0.5), 0 0 5px rgba(79, 70, 229, 0.8);
-        }
+        
         .typing-cursor {
             display: inline-block;
             width: 8px;
             height: 1em;
-            background-color: #a5b4fc;
+            background-color: var(--theme-color);
             animation: blink 1s step-end infinite;
             vertical-align: bottom;
         }
         @keyframes blink {
             from, to { background-color: transparent; }
-            50% { background-color: #a5b4fc; }
+            50% { background-color: var(--theme-color); }
         }
         .btn-primary {
+            background-color: var(--theme-color);
             transition: all 0.3s ease;
         }
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-        }
-        .code-output {
-            background-color: #0d1117;
-            font-family: 'Courier New', Courier, monospace;
+            box-shadow: 0 0 15px var(--theme-color-translucent), 0 0 5px var(--theme-color);
         }
         .nav-link.active {
-            background-color: #4f46e533;
-            border: 1px solid #4f46e5;
+            background-color: var(--theme-color-translucent);
+            border: 1px solid var(--theme-color);
             color: white;
         }
-        .nav-link.active .active-indicator { opacity: 1; }
+        .nav-link.active .active-indicator { opacity: 1; background-color: var(--theme-color); }
+
+        /* Mobile specific styles */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                width: 100%;
+                height: auto;
+                flex-direction: row;
+                justify-content: space-around;
+                padding: 8px;
+                z-index: 50;
+                overflow-x: auto;
+            }
+            .sidebar h1, .sidebar #settings-tab span:last-child { display: none; }
+            .sidebar nav { flex-direction: row; gap: 4px; }
+            .main-content { padding-bottom: 80px; }
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white">
 
     <div class="flex h-screen">
         <!-- Sidebar -->
-        <aside class="w-64 glass-panel p-4 flex flex-col shrink-0 justify-between">
-            <div>
-                <h1 class="text-3xl font-bold text-indigo-400 mb-8 tracking-wider">ARON</h1>
-                <nav class="flex flex-col space-y-1">
-                    <a href="#" id="chat-tab" class="nav-link flex items-center space-x-3 py-3 px-4 rounded-lg transition-all duration-300">
-                        <span class="active-indicator opacity-0 w-1 h-1 bg-indigo-400 rounded-full glow-effect"></span>
-                        <span>💬</span>
-                        <span>Chat</span>
-                    </a>
-                    <a href="#" id="easel-tab" class="nav-link flex items-center space-x-3 py-3 px-4 rounded-lg transition-all duration-300">
-                        <span class="active-indicator opacity-0 w-1 h-1 bg-indigo-400 rounded-full glow-effect"></span>
-                        <span>🎨</span>
-                        <span>Aron's Easel</span>
-                    </a>
-                     <a href="#" id="docu-synth-tab" class="nav-link flex items-center space-x-3 py-3 px-4 rounded-lg transition-all duration-300">
-                        <span class="active-indicator opacity-0 w-1 h-1 bg-indigo-400 rounded-full glow-effect"></span>
-                        <span>📄</span>
-                        <span>Docu-Synth</span>
-                    </a>
-                    <a href="#" id="translator-tab" class="nav-link flex items-center space-x-3 py-3 px-4 rounded-lg transition-all duration-300">
-                        <span class="active-indicator opacity-0 w-1 h-1 bg-indigo-400 rounded-full glow-effect"></span>
-                        <span>🌐</span>
-                        <span>Translator</span>
-                    </a>
-                    <a href="#" id="code-tab" class="nav-link flex items-center space-x-3 py-3 px-4 rounded-lg transition-all duration-300">
-                         <span class="active-indicator opacity-0 w-1 h-1 bg-indigo-400 rounded-full glow-effect"></span>
-                        <span>💻</span>
-                        <span>Code Companion</span>
-                    </a>
-                </nav>
-            </div>
-            <nav>
-                 <a href="#" id="settings-tab" class="nav-link flex items-center space-x-3 py-3 px-4 rounded-lg transition-all duration-300">
-                    <span class="active-indicator opacity-0 w-1 h-1 bg-indigo-400 rounded-full glow-effect"></span>
-                    <span>⚙️</span>
-                    <span>Settings</span>
+        <aside class="w-64 glass-panel p-4 flex flex-col shrink-0 justify-between sidebar">
+            <h1 class="text-3xl font-bold text-indigo-400 mb-8 tracking-wider">ARON</h1>
+            <nav class="flex flex-col md:flex-col space-y-1">
+                <a href="#" id="chat-tab" class="nav-link flex items-center justify-center md:justify-start space-x-3 py-3 px-4 rounded-lg transition-all duration-300" title="Chat">
+                    <span class="active-indicator opacity-0 w-1 h-1 rounded-full glow-effect"></span>
+                    <span>💬</span><span class="hidden md:inline">Chat</span>
+                </a>
+                <a href="#" id="vision-tab" class="nav-link flex items-center justify-center md:justify-start space-x-3 py-3 px-4 rounded-lg transition-all duration-300" title="Vision">
+                    <span class="active-indicator opacity-0 w-1 h-1 rounded-full glow-effect"></span>
+                    <span>👁️</span><span class="hidden md:inline">Vision</span>
+                </a>
+                <a href="#" id="easel-tab" class="nav-link flex items-center justify-center md:justify-start space-x-3 py-3 px-4 rounded-lg transition-all duration-300" title="Easel">
+                    <span class="active-indicator opacity-0 w-1 h-1 rounded-full glow-effect"></span>
+                    <span>🎨</span><span class="hidden md:inline">Easel</span>
+                </a>
+                <a href="#" id="planner-tab" class="nav-link flex items-center justify-center md:justify-start space-x-3 py-3 px-4 rounded-lg transition-all duration-300" title="Planner">
+                    <span class="active-indicator opacity-0 w-1 h-1 rounded-full glow-effect"></span>
+                    <span>🗓️</span><span class="hidden md:inline">Planner</span>
+                </a>
+                 <a href="#" id="code-tab" class="nav-link flex items-center justify-center md:justify-start space-x-3 py-3 px-4 rounded-lg transition-all duration-300" title="Code Companion">
+                     <span class="active-indicator opacity-0 w-1 h-1 rounded-full glow-effect"></span>
+                    <span>💻</span><span class="hidden md:inline">Code</span>
+                </a>
+                 <a href="#" id="recipe-tab" class="nav-link flex items-center justify-center md:justify-start space-x-3 py-3 px-4 rounded-lg transition-all duration-300" title="Recipe Creator">
+                     <span class="active-indicator opacity-0 w-1 h-1 rounded-full glow-effect"></span>
+                    <span>🍳</span><span class="hidden md:inline">Recipe</span>
                 </a>
             </nav>
+            <a href="#" id="settings-tab" class="nav-link flex items-center justify-center md:justify-start space-x-3 py-3 px-4 rounded-lg transition-all duration-300" title="Settings">
+                <span class="active-indicator opacity-0 w-1 h-1 rounded-full glow-effect"></span>
+                <span>⚙️</span><span class="hidden md:inline">Settings</span>
+            </a>
         </aside>
 
         <!-- Main Content -->
         <main class="flex-1 flex flex-col min-w-0 main-content">
             <!-- Chat Interface -->
             <div id="chat-interface" class="interface-panel flex flex-col h-full">
-                <div class="chat-container flex-1 p-6 overflow-y-auto"></div>
-                 <div id="smart-reply-container" class="px-6 pb-2 flex items-center gap-2"></div>
+                <div class="chat-container flex-1 p-6 overflow-y-auto scrollable-content"></div>
+                 <div id="smart-reply-container" class="px-6 pb-2 flex items-center gap-2 flex-wrap"></div>
                 <div class="p-4 bg-gray-900/50 border-t border-gray-700/50">
                     <div class="relative">
                         <input type="text" id="chat-input" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-300" placeholder="Ask Aron anything...">
@@ -139,8 +148,33 @@
                 </div>
             </div>
 
-            <!-- Aron's Easel Interface -->
-            <div id="easel-interface" class="interface-panel hidden h-full flex flex-col items-center justify-center p-8">
+            <!-- Vision Interface -->
+            <div id="vision-interface" class="interface-panel hidden h-full flex flex-col items-center justify-center p-4 md:p-8">
+                <div class="w-full max-w-4xl glass-panel p-4 md:p-8 rounded-2xl">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-2 text-center text-indigo-400">Vision</h2>
+                    <p class="text-gray-400 mb-6 text-center">✨ Upload an image and ask questions about it.</p>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="flex flex-col items-center">
+                            <input type="file" id="vision-upload" class="hidden" accept="image/*">
+                            <button id="vision-upload-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg mb-4 btn-primary">Upload Image</button>
+                            <div class="w-full aspect-square bg-black/30 border border-gray-700 rounded-lg flex items-center justify-center">
+                                <img id="vision-preview" class="hidden w-full h-full object-contain rounded-lg"/>
+                                <p id="vision-placeholder" class="text-gray-500">Preview</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col">
+                            <textarea id="vision-prompt" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4" rows="4" placeholder="e.g., What color is the car?"></textarea>
+                            <button id="vision-ask-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-5 rounded-lg w-full btn-primary mb-4">Ask</button>
+                            <div id="vision-output" class="w-full bg-gray-800/50 border border-gray-700 p-4 rounded-lg min-h-[100px] flex-1 scrollable-content overflow-y-auto">
+                                <p id="vision-answer"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Easel Interface -->
+            <div id="easel-interface" class="interface-panel hidden h-full flex flex-col items-center justify-center p-4 md:p-8">
                  <div class="text-center w-full max-w-2xl glass-panel p-8 rounded-2xl">
                     <h2 class="text-4xl font-bold mb-2 text-indigo-400">Aron's Easel</h2>
                     <p class="text-gray-400 mb-6">✨ Describe an image, and watch AI bring it to life.</p>
@@ -160,81 +194,51 @@
                 </div>
             </div>
 
-            <!-- Docu-Synth Interface -->
-            <div id="docu-synth-interface" class="interface-panel hidden h-full flex flex-col items-center justify-center p-8">
-                 <div class="w-full max-w-4xl glass-panel p-8 rounded-2xl">
-                    <h2 class="text-4xl font-bold mb-2 text-center text-indigo-400">Docu-Synth</h2>
-                    <p class="text-gray-400 mb-6 text-center">✨ Upload a text file and get a concise AI-powered summary.</p>
-                    <input type="file" id="doc-upload" class="hidden" accept=".txt">
-                    <button id="doc-upload-btn" class="block mx-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg mb-6 btn-primary">Upload .txt File</button>
-                    <div id="doc-output" class="hidden w-full bg-gray-800/50 border border-gray-700 p-6 rounded-lg min-h-[200px] scrollable-content overflow-y-auto">
-                        <h3 class="font-bold text-xl mb-3 text-indigo-400">Summary</h3>
-                        <p id="doc-summary" class="text-gray-300 text-left"></p>
-                    </div>
-                    <div id="doc-spinner" class="spinner hidden mx-auto"></div>
-                 </div>
+            <!-- Project Planner Interface -->
+            <div id="planner-interface" class="interface-panel hidden h-full flex flex-col items-center justify-center p-4 md:p-8">
+                <div class="w-full max-w-4xl glass-panel p-4 md:p-8 rounded-2xl">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-2 text-center text-indigo-400">Project Planner</h2>
+                    <p class="text-gray-400 mb-6 text-center">✨ Describe your project, and Aron will generate a plan.</p>
+                    <textarea id="planner-prompt" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4" rows="4" placeholder="e.g., Plan a marketing campaign for a new mobile app."></textarea>
+                    <button id="planner-generate-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-5 rounded-lg w-full btn-primary mb-4">Generate Plan</button>
+                    <div id="planner-output" class="w-full bg-gray-800/50 border border-gray-700 p-4 rounded-lg min-h-[200px] scrollable-content overflow-y-auto"></div>
+                </div>
             </div>
 
-            <!-- Global Translator Interface -->
-            <div id="translator-interface" class="interface-panel hidden h-full flex flex-col items-center justify-center p-8">
-                 <div class="w-full max-w-4xl glass-panel p-8 rounded-2xl">
-                    <h2 class="text-4xl font-bold mb-2 text-center text-indigo-400">Global Translator</h2>
-                    <p class="text-gray-400 mb-6 text-center">✨ Translate text into any language with AI precision.</p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block mb-2 text-gray-400">Original Text</label>
-                            <textarea id="translate-input" class="w-full h-48 bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
-                        </div>
-                        <div>
-                            <label class="block mb-2 text-gray-400">Translated Text</label>
-                            <textarea id="translate-output" class="w-full h-48 bg-gray-800 border border-gray-700 rounded-lg p-3 text-white" readonly></textarea>
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-center space-x-4 mt-4">
-                         <select id="translate-language" class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option>Spanish</option>
-                            <option>French</option>
-                            <option>German</option>
-                            <option>Japanese</option>
-                            <option>Chinese</option>
-                            <option>Russian</option>
-                        </select>
-                        <button id="translate-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-5 rounded-lg flex items-center justify-center w-36 btn-primary">
-                             <span id="translate-text">Translate</span>
-                             <div id="translate-spinner" class="spinner hidden"></div>
-                        </button>
-                    </div>
-                 </div>
-            </div>
-            
             <!-- Code Companion Interface -->
-            <div id="code-interface" class="interface-panel hidden h-full flex flex-col p-8">
+            <div id="code-interface" class="interface-panel hidden h-full flex flex-col p-4 md:p-8">
                 <div class="w-full max-w-4xl mx-auto glass-panel p-8 rounded-2xl">
                     <h2 class="text-4xl font-bold mb-2 text-indigo-400">Code Companion</h2>
                     <p class="text-gray-400 mb-6">✨ Your AI pair programmer. Describe what you want to build.</p>
                     <textarea id="code-prompt" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="3" placeholder="e.g., A python function that returns the factorial of a number"></textarea>
                     <div class="flex items-center space-x-2 my-4">
                         <select id="code-language" class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option>JavaScript</option>
-                            <option>Python</option>
-                            <option>HTML</option>
-                            <option>CSS</option>
-                            <option>SQL</option>
+                            <option>JavaScript</option><option>Python</option><option>HTML</option><option>CSS</option><option>SQL</option>
                         </select>
                         <button id="code-generate-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-5 rounded-lg flex items-center justify-center w-36 btn-primary">
-                             <span id="code-text">Generate</span>
-                             <div id="code-spinner" class="spinner hidden"></div>
+                             <span id="code-text">Generate</span><div id="code-spinner" class="spinner hidden"></div>
                         </button>
                     </div>
                     <div class="relative">
-                        <pre id="code-output" class="code-output p-4 rounded-lg h-96 overflow-y-auto border border-gray-700"></pre>
+                        <pre id="code-output" class="code-output p-4 rounded-lg h-96 overflow-y-auto border border-gray-700 scrollable-content"></pre>
                         <button id="code-copy-btn" class="hidden absolute top-4 right-4 bg-black/50 hover:bg-black/80 text-white font-bold py-1 px-3 rounded-lg btn-primary">Copy</button>
                     </div>
                 </div>
             </div>
 
+            <!-- Recipe Creator Interface -->
+            <div id="recipe-interface" class="interface-panel hidden h-full flex flex-col items-center justify-center p-4 md:p-8">
+                <div class="w-full max-w-4xl glass-panel p-4 md:p-8 rounded-2xl">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-2 text-center text-indigo-400">Recipe Creator</h2>
+                    <p class="text-gray-400 mb-6 text-center">✨ List your ingredients, and Aron will create a recipe.</p>
+                    <textarea id="recipe-prompt" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4" rows="4" placeholder="e.g., chicken breast, rice, broccoli, soy sauce"></textarea>
+                    <button id="recipe-generate-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-5 rounded-lg w-full btn-primary mb-4">Create Recipe</button>
+                    <div id="recipe-output" class="w-full bg-gray-800/50 border border-gray-700 p-4 rounded-lg min-h-[200px] scrollable-content overflow-y-auto"></div>
+                </div>
+            </div>
+
             <!-- Settings Interface -->
-            <div id="settings-interface" class="interface-panel hidden h-full flex flex-col p-8">
+            <div id="settings-interface" class="interface-panel hidden h-full flex flex-col p-4 md:p-8">
                  <div class="w-full max-w-2xl mx-auto glass-panel p-8 rounded-2xl">
                     <h2 class="text-4xl font-bold mb-6 text-indigo-400">Settings</h2>
                     <div class="space-y-6">
@@ -242,19 +246,26 @@
                             <label for="typing-toggle" class="text-lg">Enable AI Typing Effect</label>
                             <input type="checkbox" id="typing-toggle" class="form-checkbox h-5 w-5 text-indigo-600 bg-gray-700 border-gray-600 rounded focus:ring-indigo-500" checked/>
                         </div>
+                         <div class="flex flex-col space-y-2">
+                            <label class="text-lg">Theme Color</label>
+                            <div id="theme-picker" class="flex space-x-3">
+                                <button class="theme-btn w-8 h-8 rounded-full bg-indigo-600 border-2 border-white" data-color="#4f46e5"></button>
+                                <button class="theme-btn w-8 h-8 rounded-full bg-pink-600" data-color="#db2777"></button>
+                                <button class="theme-btn w-8 h-8 rounded-full bg-teal-600" data-color="#0d9488"></button>
+                                <button class="theme-btn w-8 h-8 rounded-full bg-amber-500" data-color="#f59e0b"></button>
+                            </div>
+                        </div>
                         <div class="flex flex-col space-y-2">
                             <label for="persona-select" class="text-lg">Aron's Persona</label>
                             <select id="persona-select" class="bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                <option value="professional">Professional Assistant</option>
-                                <option value="creative">Creative Partner</option>
-                                <option value="humorous">Humorous Sidekick</option>
-                                <option value="socratic">Socratic Tutor</option>
+                                <option value="professional">Professional Assistant</option><option value="creative">Creative Partner</option><option value="humorous">Humorous Sidekick</option><option value="socratic">Socratic Tutor</option>
                             </select>
                         </div>
                         <div class="flex space-x-4">
                             <button id="persona-apply-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg btn-primary">Apply & Reset Chat</button>
                             <button id="clear-history-btn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg btn-primary">Clear Chat History</button>
                         </div>
+                         <button id="export-chat-btn" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded-lg btn-primary">Export Chat as .txt</button>
                     </div>
                  </div>
             </div>
@@ -266,23 +277,24 @@
             // --- Element References ---
             const allTabs = {
                 chat: { tab: document.getElementById('chat-tab'), interface: document.getElementById('chat-interface') },
+                vision: { tab: document.getElementById('vision-tab'), interface: document.getElementById('vision-interface') },
                 easel: { tab: document.getElementById('easel-tab'), interface: document.getElementById('easel-interface') },
-                docuSynth: { tab: document.getElementById('docu-synth-tab'), interface: document.getElementById('docu-synth-interface') },
-                translator: { tab: document.getElementById('translator-tab'), interface: document.getElementById('translator-interface') },
+                planner: { tab: document.getElementById('planner-tab'), interface: document.getElementById('planner-interface') },
                 code: { tab: document.getElementById('code-tab'), interface: document.getElementById('code-interface') },
+                recipe: { tab: document.getElementById('recipe-tab'), interface: document.getElementById('recipe-interface') },
                 settings: { tab: document.getElementById('settings-tab'), interface: document.getElementById('settings-interface') },
             };
 
             // UI Elements
             const chatInput = document.getElementById('chat-input'), sendBtn = document.getElementById('send-btn'), sendText = document.getElementById('send-text'), sendSpinner = document.getElementById('send-spinner'), chatContainer = document.querySelector('.chat-container'), smartReplyContainer = document.getElementById('smart-reply-container');
+            const visionUploadBtn = document.getElementById('vision-upload-btn'), visionUpload = document.getElementById('vision-upload'), visionPreview = document.getElementById('vision-preview'), visionPlaceholder = document.getElementById('vision-placeholder'), visionPrompt = document.getElementById('vision-prompt'), visionAskBtn = document.getElementById('vision-ask-btn'), visionAnswer = document.getElementById('vision-answer');
             const easelPrompt = document.getElementById('easel-prompt'), easelGenerateBtn = document.getElementById('easel-generate-btn'), easelText = document.getElementById('easel-text'), easelSpinner = document.getElementById('easel-spinner'), easelOutput = document.getElementById('easel-output'), easelPlaceholder = document.getElementById('easel-placeholder'), easelImage = document.getElementById('easel-image'), easelOutputSpinner = document.getElementById('easel-output-spinner'), easelDownloadBtn = document.getElementById('easel-download-btn');
-            const docUploadBtn = document.getElementById('doc-upload-btn'), docUpload = document.getElementById('doc-upload'), docOutput = document.getElementById('doc-output'), docSummary = document.getElementById('doc-summary'), docSpinner = document.getElementById('doc-spinner');
-            const translateInput = document.getElementById('translate-input'), translateOutput = document.getElementById('translate-output'), translateLanguage = document.getElementById('translate-language'), translateBtn = document.getElementById('translate-btn'), translateText = document.getElementById('translate-text'), translateSpinner = document.getElementById('translate-spinner');
+            const plannerPrompt = document.getElementById('planner-prompt'), plannerGenerateBtn = document.getElementById('planner-generate-btn'), plannerOutput = document.getElementById('planner-output');
             const codePrompt = document.getElementById('code-prompt'), codeLanguage = document.getElementById('code-language'), codeGenerateBtn = document.getElementById('code-generate-btn'), codeText = document.getElementById('code-text'), codeSpinner = document.getElementById('code-spinner'), codeOutput = document.getElementById('code-output'), codeCopyBtn = document.getElementById('code-copy-btn');
-            const typingToggle = document.getElementById('typing-toggle'), personaSelect = document.getElementById('persona-select'), personaApplyBtn = document.getElementById('persona-apply-btn'), clearHistoryBtn = document.getElementById('clear-history-btn');
+            const recipePrompt = document.getElementById('recipe-prompt'), recipeGenerateBtn = document.getElementById('recipe-generate-btn'), recipeOutput = document.getElementById('recipe-output');
+            const typingToggle = document.getElementById('typing-toggle'), personaSelect = document.getElementById('persona-select'), personaApplyBtn = document.getElementById('persona-apply-btn'), clearHistoryBtn = document.getElementById('clear-history-btn'), exportChatBtn = document.getElementById('export-chat-btn'), themePicker = document.getElementById('theme-picker');
 
-            let chatHistory = [], enableTypingEffect = true;
-            let currentPersona = "professional";
+            let chatHistory = [], enableTypingEffect = true, currentPersona = "professional", visionBase64 = null;
 
             const personaPrompts = {
                 professional: "You are Aron, a helpful and friendly AI assistant. Keep your answers concise and professional.",
@@ -295,47 +307,33 @@
             function switchTab(tabKey) {
                 Object.values(allTabs).forEach(({ tab, interface: intf }) => {
                     tab.classList.remove('active');
-                    intf.classList.add('hidden');
+                    if (intf) intf.classList.add('hidden');
                 });
                 const active = allTabs[tabKey];
                 active.tab.classList.add('active');
-                active.interface.classList.remove('hidden');
+                if (active.interface) active.interface.classList.remove('hidden');
             }
             Object.keys(allTabs).forEach(key => allTabs[key].tab.addEventListener('click', (e) => { e.preventDefault(); switchTab(key); }));
             
             // --- Gemini API Calls ---
             const GEMINI_API_KEY = ""; // Provided by environment
-            async function callGemini(payload, model = 'gemini-2.0-flash') { //gogle model
-            // /${model}:generateContent?key=${GEMINI_API_KEY}`;
+            async function callGemini(payload, model = 'gemini-2.0-flash') {
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
                 try {
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                     if (!response.ok) throw new Error(`API Error: ${response.status}`);
                     return await response.json();
-                } catch (error) {
-                    console.error(`Gemini API Error (${model}):`, error);
-                    return null;
-                }
+                } catch (error) { console.error(`Gemini API Error (${model}):`, error); return null; }
             }
             
             async function callImagen(prompt) {
                 const payload = { instances: [{ prompt }], parameters: { "sampleCount": 1 } };
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${GEMINI_API_KEY}`;
                 try {
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                     if (!response.ok) throw new Error(`API Error: ${response.status}`);
                     return await response.json();
-                } catch (error) {
-                    console.error("Imagen API Error:", error);
-                    return null;
-                }
+                } catch (error) { console.error("Imagen API Error:", error); return null; }
             }
 
             // --- Chat Functionality ---
@@ -350,7 +348,6 @@
                 const cursor = document.createElement('span');
                 cursor.className = 'typing-cursor';
                 element.appendChild(cursor);
-
                 function type() {
                     if (i < text.length) {
                         element.insertBefore(document.createTextNode(text.charAt(i)), cursor);
@@ -368,9 +365,8 @@
                 const messageElement = document.createElement('div');
                 messageElement.classList.add('mb-4');
                 const messageBody = document.createElement('div');
-                
                 if (sender === 'user') {
-                    messageElement.innerHTML = `<div class="flex justify-end"><div class="bg-indigo-600 text-white rounded-lg p-3 max-w-lg">${message.replace(/\n/g, '<br>')}</div></div>`;
+                    messageElement.innerHTML = `<div class="flex justify-end"><div class="bg-indigo-600 text-white rounded-lg p-3 max-w-lg" style="background-color: var(--theme-color);">${message.replace(/\n/g, '<br>')}</div></div>`;
                 } else {
                     messageElement.className = 'flex';
                     messageBody.className = 'glass-panel text-white rounded-lg p-3 max-w-lg';
@@ -379,7 +375,6 @@
                         typeWriter(messageBody, message, () => generateSmartReplies(message));
                     } else {
                         messageBody.innerHTML = message.replace(/\n/g, '<br>');
-                        generateSmartReplies(message);
                     }
                 }
                 chatContainer.appendChild(messageElement);
@@ -393,18 +388,14 @@
                 appendMessage('user', prompt);
                 chatInput.value = '';
                 smartReplyContainer.innerHTML = '';
-
                 sendSpinner.classList.remove('hidden');
                 sendText.classList.add('hidden');
                 sendBtn.disabled = true;
-
                 chatHistory.push({ role: "user", parts: [{ text: prompt }] });
                 const result = await callGemini({ contents: chatHistory });
-                
                 sendSpinner.classList.add('hidden');
                 sendText.classList.remove('hidden');
                 sendBtn.disabled = false;
-
                 if (result && result.candidates) {
                     const text = result.candidates[0].content.parts[0].text;
                     chatHistory.push({ role: "model", parts: [{ text: text }] });
@@ -423,16 +414,7 @@
                     contents: [{ role: "user", parts: [{ text: prompt }] }],
                     generationConfig: {
                         responseMimeType: "application/json",
-                        responseSchema: {
-                            type: "OBJECT",
-                            properties: {
-                                "replies": {
-                                    "type": "ARRAY",
-                                    "items": { "type": "STRING" }
-                                }
-                            },
-                            required: ["replies"]
-                        }
+                        responseSchema: { type: "OBJECT", properties: { "replies": { "type": "ARRAY", "items": { "type": "STRING" } } }, required: ["replies"] }
                     }
                 };
                 const result = await callGemini(payload);
@@ -441,18 +423,50 @@
                     replies.slice(0, 3).forEach(reply => {
                         const button = document.createElement('button');
                         button.className = 'glass-panel text-sm py-1 px-3 rounded-full hover:bg-indigo-600/50 transition-colors';
+                        button.style.borderColor = 'var(--theme-color)';
                         button.textContent = reply;
                         button.onclick = () => handleSendMessage(reply);
                         smartReplyContainer.appendChild(button);
                     });
                 }
             }
+            
+            // --- Vision Functionality ---
+            visionUploadBtn.addEventListener('click', () => visionUpload.click());
+            visionUpload.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        visionPreview.src = event.target.result;
+                        visionPreview.classList.remove('hidden');
+                        visionPlaceholder.classList.add('hidden');
+                        visionBase64 = event.target.result.split(',')[1];
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            visionAskBtn.addEventListener('click', async () => {
+                const prompt = visionPrompt.value.trim();
+                if (!prompt || !visionBase64) {
+                    alert('Please upload an image and ask a question.');
+                    return;
+                }
+                visionAnswer.textContent = 'Analyzing...';
+                const payload = { contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: visionBase64 } }] }] };
+                const result = await callGemini(payload);
+                if (result && result.candidates) {
+                    typeWriter(visionAnswer, result.candidates[0].content.parts[0].text);
+                } else {
+                    visionAnswer.textContent = 'Could not analyze the image.';
+                }
+            });
 
             // --- Easel Functionality ---
-            async function handleImageGeneration() {
+            easelGenerateBtn.addEventListener('click', async () => {
                 const prompt = easelPrompt.value.trim();
                 if (!prompt) return;
-
                 easelSpinner.classList.remove('hidden');
                 easelText.classList.add('hidden');
                 easelGenerateBtn.disabled = true;
@@ -461,15 +475,12 @@
                 easelDownloadBtn.classList.add('hidden');
                 easelOutputSpinner.classList.remove('hidden');
                 easelOutput.classList.add('glow-effect');
-
                 const result = await callImagen(prompt);
-                
                 easelSpinner.classList.add('hidden');
                 easelText.classList.remove('hidden');
                 easelGenerateBtn.disabled = false;
                 easelOutputSpinner.classList.add('hidden');
                 easelOutput.classList.remove('glow-effect');
-
                 if (result && result.predictions) {
                     const imageUrl = `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
                     easelImage.src = imageUrl;
@@ -479,8 +490,7 @@
                     easelPlaceholder.textContent = "Failed to generate image. Please try again.";
                     easelPlaceholder.classList.remove('hidden');
                 }
-            }
-            easelGenerateBtn.addEventListener('click', handleImageGeneration);
+            });
             easelDownloadBtn.addEventListener('click', () => {
                 const link = document.createElement('a');
                 link.href = easelImage.src;
@@ -488,82 +498,49 @@
                 link.click();
             });
 
-            // --- Docu-Synth Functionality ---
-            docUploadBtn.addEventListener('click', () => docUpload.click());
-            docUpload.addEventListener('change', async (event) => {
-                const file = event.target.files[0];
-                if (!file || file.type !== 'text/plain') {
-                    alert('Please upload a .txt file.');
-                    return;
-                }
-                docSpinner.classList.remove('hidden');
-                docOutput.classList.add('hidden');
-                const text = await file.text();
-                const prompt = `Summarize the following document concisely:\n\n${text}`;
+            // --- Planner & Recipe Functionality ---
+            async function generateMarkdownContent(prompt, outputElement) {
+                if (!prompt) return;
+                outputElement.innerHTML = '<div class="spinner mx-auto"></div>';
                 const result = await callGemini({ contents: [{ role: "user", parts: [{ text: prompt }] }] });
-                docSpinner.classList.add('hidden');
-                docOutput.classList.remove('hidden');
                 if (result && result.candidates) {
-                    typeWriter(docSummary, result.candidates[0].content.parts[0].text);
+                    let html = result.candidates[0].content.parts[0].text
+                        .replace(/### (.*)/g, '<h3 class="text-xl font-bold text-indigo-400 mt-4 mb-2">$1</h3>')
+                        .replace(/## (.*)/g, '<h2 class="text-2xl font-bold text-indigo-300 mt-6 mb-3">$1</h2>')
+                        .replace(/\* \*(.*)\* \*/g, '<strong>$1</strong>')
+                        .replace(/\* (.*)/g, '<li class="ml-4 list-disc">$1</li>')
+                        .replace(/\n/g, '<br>');
+                    outputElement.innerHTML = html;
                 } else {
-                    docSummary.textContent = 'Could not summarize the document.';
-                }
-            });
-
-            // --- Translator Functionality ---
-            async function handleTranslation() {
-                const text = translateInput.value.trim();
-                const language = translateLanguage.value;
-                if (!text) return;
-
-                translateSpinner.classList.remove('hidden');
-                translateText.classList.add('hidden');
-                translateBtn.disabled = true;
-
-                const prompt = `Translate the following text to ${language}: "${text}"`;
-                const result = await callGemini({ contents: [{ role: "user", parts: [{ text: prompt }] }] });
-
-                translateSpinner.classList.add('hidden');
-                translateText.classList.remove('hidden');
-                translateBtn.disabled = false;
-
-                if (result && result.candidates) {
-                    translateOutput.value = result.candidates[0].content.parts[0].text;
-                } else {
-                    translateOutput.value = 'Translation failed.';
+                    outputElement.textContent = 'Could not generate content.';
                 }
             }
-            translateBtn.addEventListener('click', handleTranslation);
+            plannerGenerateBtn.addEventListener('click', () => generateMarkdownContent(`Generate a project plan based on this description: "${plannerPrompt.value}". Use markdown for structure.`, plannerOutput));
+            recipeGenerateBtn.addEventListener('click', () => generateMarkdownContent(`Create a recipe using these ingredients: "${recipePrompt.value}". Structure it with a title, ingredients list, and instructions using markdown.`, recipeOutput));
 
             // --- Code Companion Functionality ---
-            async function handleCodeGeneration() {
-                 const prompt = codePrompt.value.trim();
+            codeGenerateBtn.addEventListener('click', async () => {
+                const prompt = codePrompt.value.trim();
                 const language = codeLanguage.value;
                 if (!prompt) return;
-
                 codeSpinner.classList.remove('hidden');
                 codeText.classList.add('hidden');
                 codeGenerateBtn.disabled = true;
                 codeOutput.textContent = 'Generating code...';
                 codeCopyBtn.classList.add('hidden');
-
                 const fullPrompt = `Generate a code snippet in ${language} for the following task: ${prompt}. Only return the code itself inside a single markdown block.`;
                 const result = await callGemini({ contents: [{ role: "user", parts: [{ text: fullPrompt }] }] });
-
                 codeSpinner.classList.add('hidden');
                 codeText.classList.remove('hidden');
                 codeGenerateBtn.disabled = false;
-
                 if (result && result.candidates) {
-                    let code = result.candidates[0].content.parts[0].text;
-                    code = code.replace(/^```(?:\w+\n)?/, '').replace(/```$/, '');
+                    let code = result.candidates[0].content.parts[0].text.replace(/^```(?:\w+\n)?/, '').replace(/```$/, '');
                     codeOutput.textContent = code;
                     codeCopyBtn.classList.remove('hidden');
                 } else {
                     codeOutput.textContent = 'Failed to generate code.';
                 }
-            }
-            codeGenerateBtn.addEventListener('click', handleCodeGeneration);
+            });
             codeCopyBtn.addEventListener('click', () => {
                 navigator.clipboard.writeText(codeOutput.textContent).then(() => {
                     codeCopyBtn.textContent = 'Copied!';
@@ -584,18 +561,41 @@
                     initializeChat(true);
                 }
             });
+            exportChatBtn.addEventListener('click', () => {
+                const historyText = chatHistory.map(msg => `${msg.role.toUpperCase()}:\n${msg.parts[0].text}`).join('\n\n---\n\n');
+                const blob = new Blob([historyText], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'aron-chat-history.txt';
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+            themePicker.addEventListener('click', (e) => {
+                if (e.target.classList.contains('theme-btn')) {
+                    const color = e.target.dataset.color;
+                    document.documentElement.style.setProperty('--theme-color', color);
+                    document.documentElement.style.setProperty('--theme-color-translucent', color + '33');
+                    document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('border-white'));
+                    e.target.classList.add('border-white');
+                }
+            });
 
             // --- Initial Setup ---
             function initializeChat(forceReset = false) {
                 const savedHistory = localStorage.getItem('aronChatHistory');
                 chatContainer.innerHTML = '';
                 smartReplyContainer.innerHTML = '';
-
                 if (savedHistory && !forceReset) {
                     chatHistory = JSON.parse(savedHistory);
-                    chatHistory.forEach(msg => {
+                    chatHistory.slice(2).forEach(msg => { // Skip system prompts
                         appendMessage(msg.role === 'user' ? 'user' : 'aron', msg.parts[0].text, false);
                     });
+                    if (chatHistory.length > 2) {
+                        generateSmartReplies(chatHistory[chatHistory.length - 1].parts[0].text);
+                    } else {
+                         appendMessage('aron', "Welcome back to Aron. How may I help you today?", true);
+                    }
                 } else {
                     chatHistory = [
                         { role: "user", parts: [{ text: personaPrompts[currentPersona] }] },
