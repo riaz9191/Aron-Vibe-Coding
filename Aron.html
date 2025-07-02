@@ -11,25 +11,50 @@
         :root {
             --theme-color: #4f46e5;
             --theme-color-translucent: #4f46e533;
+            --font-size-base: 16px;
+            --glass-blur: 12px;
         }
         body {
             font-family: 'Inter', sans-serif;
             background: #0a0a0a;
+            font-size: var(--font-size-base);
+        }
+        #animated-bg-blob {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            overflow: hidden;
+        }
+        .blob {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(180deg, var(--theme-color), #9333ea);
+            border-radius: 50%;
+            filter: blur(150px);
+            opacity: 0.2;
+            animation: move 25s infinite alternate;
+        }
+        .blob:nth-child(2) {
+            width: 300px;
+            height: 300px;
+            animation-delay: -5s;
+            animation-duration: 20s;
+        }
+        @keyframes move {
+            from { transform: translate(-100px, -50px) rotate(-90deg); }
+            to { transform: translate(calc(100vw - 400px), calc(100vh - 400px)) rotate(90deg); }
         }
         .main-content {
-            background: linear-gradient(135deg, #1a1a1a, #0a0a0a, #1a1a1a);
-            background-size: 400% 400%;
-            animation: living-background 15s ease infinite;
-        }
-        @keyframes living-background {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            background: transparent;
         }
         .glass-panel {
             background: rgba(20, 20, 20, 0.5);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
         .scrollable-content::-webkit-scrollbar { width: 6px; }
@@ -94,6 +119,10 @@
     </style>
 </head>
 <body class="bg-gray-900 text-white">
+    <div id="animated-bg-blob">
+        <div class="blob"></div>
+        <div class="blob"></div>
+    </div>
 
     <div class="flex h-screen">
         <!-- Sidebar -->
