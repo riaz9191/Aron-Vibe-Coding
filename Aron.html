@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aron</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0a;
+        }
+        .sidebar {
+            background-color: #111111;
+            border-right: 1px solid #222;
+        }
+        .main-content {
+            background: linear-gradient(135deg, #1a1a1a, #0a0a0a, #1a1a1a);
+            background-size: 400% 400%;
+            animation: living-background 15s ease infinite;
+        }
+        @keyframes living-background {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .chat-container::-webkit-scrollbar, .code-output::-webkit-scrollbar {
+            width: 6px;
+        }
+        .chat-container::-webkit-scrollbar-thumb, .code-output::-webkit-scrollbar-thumb {
+            background-color: #4f46e5;
+            border-radius: 20px;
+        }
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .glow-effect {
+            box-shadow: 0 0 15px rgba(79, 70, 229, 0.5), 0 0 5px rgba(79, 70, 229, 0.8);
+        }
+        .typing-cursor {
+            display: inline-block;
+            width: 8px;
+            height: 1em;
+            background-color: #a5b4fc;
+            animation: blink 1s step-end infinite;
+            vertical-align: bottom;
+        }
+        @keyframes blink {
+            from, to { background-color: transparent; }
+            50% { background-color: #a5b4fc; }
+        }
+        .btn-primary {
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .code-output {
+            background-color: #0d1117;
+            font-family: 'Courier New', Courier, monospace;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <aside class="w-64 sidebar p-4 flex flex-col shrink-0 justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-indigo-400 mb-8 tracking-wider">ARON</h1>
+                <nav class="flex flex-col space-y-2">
+                    <a href="#" id="chat-tab" class="flex items-center space-x-3 text-white py-3 px-4 rounded-lg transition-all duration-300 bg-indigo-600/30 border border-indigo-500">
+                        <span>💬</span>
+                        <span>Chat</span>
+                    </a>
+                    <a href="#" id="easel-tab" class="flex items-center space-x-3 hover:bg-gray-700/50 py-3 px-4 rounded-lg transition-all duration-300">
+                        <span>🎨</span>
+                        <span>Aron's Easel</span>
+                    </a>
+                    <a href="#" id="analyst-tab" class="flex items-center space-x-3 hover:bg-gray-700/50 py-3 px-4 rounded-lg transition-all duration-300">
+                        <span>📊</span>
+                        <span>Aron's Analyst</span>
+                    </a>
+                    <a href="#" id="code-tab" class="flex items-center space-x-3 hover:bg-gray-700/50 py-3 px-4 rounded-lg transition-all duration-300">
+                        <span>💻</span>
+                        <span>Code Companion</span>
+                    </a>
+                    <a href="#" id="audio-tab" class="flex items-center space-x-3 hover:bg-gray-700/50 py-3 px-4 rounded-lg transition-all duration-300">
+                        <span>🎤</span>
+                        <span>Audio Scribe</span>
+                    </a>
+                </nav>
+            </div>
+            <nav>
+                 <a href="#" id="settings-tab" class="flex items-center space-x-3 hover:bg-gray-700/50 py-3 px-4 rounded-lg transition-all duration-300">
+                    <span>⚙️</span>
+                    <span>Settings</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col min-w-0 main-content">
+            <!-- Chat Interface -->
+            <div id="chat-interface" class="flex flex-col h-full">
+                <div class="chat-container flex-1 p-6 overflow-y-auto"></div>
+                <div class="p-4 bg-gray-900/50 border-t border-gray-700/50">
+                    <div class="relative">
+                        <input type="text" id="chat-input" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-300" placeholder="Ask Aron anything...">
+                        <button id="send-btn" class="absolute right-2 top-1/2 -translate-y-1/2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center w-24 btn-primary">
+                            <span id="send-text">Send</span>
+                            <div id="send-spinner" class="spinner hidden"></div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aron's Easel Interface -->
+            <div id="easel-interface" class="hidden h-full flex flex-col items-center justify-center p-8">
+                <div class="text-center w-full max-w-2xl">
+                    <h2 class="text-4xl font-bold mb-2 text-indigo-400">Aron's Easel</h2>
+                    <p class="text-gray-400 mb-6">✨ Describe an image, and watch AI bring it to life.</p>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <input type="text" id="easel-prompt" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g., A photorealistic cat astronaut on Mars">
+                        <button id="easel-generate-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-5 rounded-lg flex items-center justify-center w-36 btn-primary">
+                             <span id="easel-text">Generate</span>
+                             <div id="easel-spinner" class="spinner hidden"></div>
+                        </button>
+                    </div>
+                    <div id="easel-output" class="bg-black/30 border border-gray-700 w-full aspect-square rounded-lg flex items-center justify-center transition-all duration-500 relative">
+                        <p id="easel-placeholder" class="text-gray-500">Image will be generated here.</p>
+                        <img id="easel-image" src="" class="hidden w-full h-full object-contain rounded-lg"/>
+                        <div id="easel-output-spinner" class="spinner hidden"></div>
+                        <button id="easel-download-btn" class="hidden absolute bottom-4 right-4 bg-black/50 hover:bg-black/80 text-white font-bold py-2 px-4 rounded-lg btn-primary">Download</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aron's Analyst Interface -->
+            <div id="analyst-interface" class="hidden h-full flex flex-col items-center justify-center p-8">
+                 <div class="text-center w-full max-w-4xl">
+                    <h2 class="text-4xl font-bold mb-2 text-indigo-400">Aron's Analyst</h2>
+                    <p class="text-gray-400 mb-6">✨ Upload a CSV, and let AI reveal insights and visualize your data.</p>
+                    <input type="file" id="csv-upload" class="hidden" accept=".csv">
+                    <button id="csv-upload-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg mb-6 btn-primary">Upload CSV</button>
+                    <div id="analyst-output" class="hidden w-full grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-gray-800/50 border border-gray-700 p-6 rounded-lg">
+                            <h3 class="font-bold text-xl mb-3 text-indigo-400">Analysis</h3>
+                            <p id="analyst-text" class="text-gray-300 text-left"></p>
+                        </div>
+                        <div class="bg-gray-800/50 border border-gray-700 p-6 rounded-lg">
+                             <h3 class="font-bold text-xl mb-3 text-indigo-400">Visualization</h3>
+                            <canvas id="analyst-chart"></canvas>
+                        </div>
+                    </div>
+                    <div id="analyst-spinner" class="spinner hidden"></div>
+                 </div>
+            </div>
+            
+            <!-- Code Companion Interface -->
+            <div id="code-interface" class="hidden h-full flex flex-col p-8">
+                <div class="w-full max-w-4xl mx-auto">
+                    <h2 class="text-4xl font-bold mb-2 text-indigo-400">Code Companion</h2>
+                    <p class="text-gray-400 mb-6">✨ Your AI pair programmer. Describe what you want to build.</p>
+                    <textarea id="code-prompt" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="3" placeholder="e.g., A python function that returns the factorial of a number"></textarea>
+                    <div class="flex items-center space-x-2 my-4">
+                        <select id="code-language" class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option>JavaScript</option>
+                            <option>Python</option>
+                            <option>HTML</option>
+                            <option>CSS</option>
+                            <option>SQL</option>
+                        </select>
+                        <button id="code-generate-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-5 rounded-lg flex items-center justify-center w-36 btn-primary">
+                             <span id="code-text">Generate</span>
+                             <div id="code-spinner" class="spinner hidden"></div>
+                        </button>
+                    </div>
+                    <div class="relative">
+                        <pre id="code-output" class="code-output p-4 rounded-lg h-96 overflow-y-auto border border-gray-700"></pre>
+                        <button id="code-copy-btn" class="hidden absolute top-4 right-4 bg-black/50 hover:bg-black/80 text-white font-bold py-1 px-3 rounded-lg btn-primary">Copy</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audio Scribe Interface -->
+            <div id="audio-interface" class="hidden h-full flex flex-col items-center justify-center p-8">
+                 <div class="text-center w-full max-w-2xl">
+                    <h2 class="text-4xl font-bold mb-2 text-indigo-400">Audio Scribe</h2>
+                    <p class="text-gray-400 mb-6">✨ Upload an audio file to be transcribed. (UI Mockup)</p>
+                    <input type="file" id="audio-upload" class="hidden" accept="audio/*">
+                    <button id="audio-upload-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg mb-6 btn-primary">Upload Audio File</button>
+                    <div id="audio-output" class="hidden w-full bg-gray-800/50 border border-gray-700 p-6 rounded-lg">
+                        <h3 class="font-bold text-xl mb-3 text-indigo-400">Transcription</h3>
+                        <p id="audio-text" class="text-gray-300 text-left"></p>
+                    </div>
+                    <div id="audio-spinner" class="spinner hidden"></div>
+                 </div>
+            </div>
+
+            <!-- Settings Interface -->
+            <div id="settings-interface" class="hidden h-full flex flex-col items-center justify-center p-8">
+                 <div class="w-full max-w-2xl">
+                    <h2 class="text-4xl font-bold mb-6 text-indigo-400">Settings</h2>
+                    <div class="bg-gray-800/50 border border-gray-700 p-6 rounded-lg flex justify-between items-center">
+                        <label for="typing-toggle" class="text-lg">Enable AI Typing Effect</label>
+                        <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                            <input type="checkbox" id="typing-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" checked/>
+                            <label for="typing-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-600 cursor-pointer"></label>
+                        </div>
+                    </div>
+                 </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Element References ---
+            const allTabs = {
+                chat: { tab: document.getElementById('chat-tab'), interface: document.getElementById('chat-interface') },
+                easel: { tab: document.getElementById('easel-tab'), interface: document.getElementById('easel-interface') },
+                analyst: { tab: document.getElementById('analyst-tab'), interface: document.getElementById('analyst-interface') },
+                code: { tab: document.getElementById('code-tab'), interface: document.getElementById('code-interface') },
+                audio: { tab: document.getElementById('audio-tab'), interface: document.getElementById('audio-interface') },
+                settings: { tab: document.getElementById('settings-tab'), interface: document.getElementById('settings-interface') },
+            };
+
+            // UI Elements
+            const chatInput = document.getElementById('chat-input'), sendBtn = document.getElementById('send-btn'), sendText = document.getElementById('send-text'), sendSpinner = document.getElementById('send-spinner'), chatContainer = document.querySelector('.chat-container');
+            const easelPrompt = document.getElementById('easel-prompt'), easelGenerateBtn = document.getElementById('easel-generate-btn'), easelText = document.getElementById('easel-text'), easelSpinner = document.getElementById('easel-spinner'), easelOutput = document.getElementById('easel-output'), easelPlaceholder = document.getElementById('easel-placeholder'), easelImage = document.getElementById('easel-image'), easelOutputSpinner = document.getElementById('easel-output-spinner'), easelDownloadBtn = document.getElementById('easel-download-btn');
+            const csvUploadBtn = document.getElementById('csv-upload-btn'), csvUpload = document.getElementById('csv-upload'), analystOutput = document.getElementById('analyst-output'), analystText = document.getElementById('analyst-text'), analystChartEl = document.getElementById('analyst-chart'), analystSpinner = document.getElementById('analyst-spinner');
+            const codePrompt = document.getElementById('code-prompt'), codeLanguage = document.getElementById('code-language'), codeGenerateBtn = document.getElementById('code-generate-btn'), codeText = document.getElementById('code-text'), codeSpinner = document.getElementById('code-spinner'), codeOutput = document.getElementById('code-output'), codeCopyBtn = document.getElementById('code-copy-btn');
+            const audioUploadBtn = document.getElementById('audio-upload-btn'), audioUpload = document.getElementById('audio-upload'), audioOutput = document.getElementById('audio-output'), audioText = document.getElementById('audio-text'), audioSpinner = document.getElementById('audio-spinner');
+            const typingToggle = document.getElementById('typing-toggle');
+
+            let chartInstance = null, chatHistory = [], enableTypingEffect = true;
+
+            // --- Tab Navigation ---
+            function switchTab(tabKey) {
+                Object.values(allTabs).forEach(({ tab, interface: intf }) => {
+                    tab.classList.remove('bg-indigo-600/30', 'border-indigo-500', 'text-white');
+                    tab.classList.add('hover:bg-gray-700/50');
+                    intf.classList.add('hidden');
+                });
+                const active = allTabs[tabKey];
+                active.tab.classList.add('bg-indigo-600/30', 'border-indigo-500', 'text-white');
+                active.tab.classList.remove('hover:bg-gray-700/50');
+                active.interface.classList.remove('hidden');
+            }
+            Object.keys(allTabs).forEach(key => allTabs[key].tab.addEventListener('click', (e) => { e.preventDefault(); switchTab(key); }));
+            
+            // --- Gemini API Calls ---
+            const GEMINI_API_KEY = ""; // Provided by environment
+
+            async function callGemini(payload, model = 'gemini-2.0-flash') {
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                    return await response.json();
+                } catch (error) {
+                    console.error(`Gemini API Error (${model}):`, error);
+                    return null;
+                }
+            }
+            
+            async function callImagen(prompt) {
+                const payload = { instances: [{ prompt }], parameters: { "sampleCount": 1 } };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${GEMINI_API_KEY}`;
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                    return await response.json();
+                } catch (error) {
+                    console.error("Imagen API Error:", error);
+                    return null;
+                }
+            }
+
+            // --- Chat Functionality ---
+            function typeWriter(element, text, callback) {
+                if (!enableTypingEffect) {
+                    element.innerHTML = text.replace(/\n/g, '<br>');
+                    if (callback) callback();
+                    return;
+                }
+                let i = 0;
+                element.innerHTML = "";
+                const cursor = document.createElement('span');
+                cursor.className = 'typing-cursor';
+                element.appendChild(cursor);
+
+                function type() {
+                    if (i < text.length) {
+                        element.insertBefore(document.createTextNode(text.charAt(i)), cursor);
+                        i++;
+                        setTimeout(type, 20);
+                    } else {
+                        cursor.remove();
+                        if (callback) callback();
+                    }
+                }
+                type();
+            }
+
+            function appendMessage(sender, message, isTyping = false) {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('mb-4');
+                const messageBody = document.createElement('div');
+                
+                if (sender === 'user') {
+                    messageElement.innerHTML = `<div class="flex justify-end"><div class="bg-indigo-600 text-white rounded-lg p-3 max-w-lg">${message.replace(/\n/g, '<br>')}</div></div>`;
+                } else {
+                    messageElement.className = 'flex';
+                    messageBody.className = 'bg-gray-700/80 text-white rounded-lg p-3 max-w-lg';
+                    messageElement.appendChild(messageBody);
+                    if (isTyping) {
+                        typeWriter(messageBody, message);
+                    } else {
+                        messageBody.innerHTML = message.replace(/\n/g, '<br>');
+                    }
+                }
+                chatContainer.appendChild(messageElement);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+
+            async function handleSendMessage() {
+                const prompt = chatInput.value.trim();
+                if (!prompt) return;
+                appendMessage('user', prompt);
+                chatInput.value = '';
+
+                sendSpinner.classList.remove('hidden');
+                sendText.classList.add('hidden');
+                sendBtn.disabled = true;
+
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const result = await callGemini({ contents: chatHistory });
+                
+                sendSpinner.classList.add('hidden');
+                sendText.classList.remove('hidden');
+                sendBtn.disabled = false;
+
+                if (result && result.candidates) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    chatHistory.push({ role: "model", parts: [{ text: text }] });
+                    appendMessage('aron', text, true);
+                } else {
+                    appendMessage('aron', "Sorry, I encountered an error. Please try again.", false);
+                }
+            }
+            sendBtn.addEventListener('click', handleSendMessage);
+            chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleSendMessage(); });
+
+            // --- Easel Functionality ---
+            async function handleImageGeneration() {
+                const prompt = easelPrompt.value.trim();
+                if (!prompt) return;
+
+                easelSpinner.classList.remove('hidden');
+                easelText.classList.add('hidden');
+                easelGenerateBtn.disabled = true;
+                easelPlaceholder.classList.add('hidden');
+                easelImage.classList.add('hidden');
+                easelDownloadBtn.classList.add('hidden');
+                easelOutputSpinner.classList.remove('hidden');
+                easelOutput.classList.add('glow-effect');
+
+                const result = await callImagen(prompt);
+                
+                easelSpinner.classList.add('hidden');
+                easelText.classList.remove('hidden');
+                easelGenerateBtn.disabled = false;
+                easelOutputSpinner.classList.add('hidden');
+                easelOutput.classList.remove('glow-effect');
+
+                if (result && result.predictions) {
+                    const imageUrl = `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
+                    easelImage.src = imageUrl;
+                    easelImage.classList.remove('hidden');
+                    easelDownloadBtn.classList.remove('hidden');
+                } else {
+                    easelPlaceholder.textContent = "Failed to generate image. Please try again.";
+                    easelPlaceholder.classList.remove('hidden');
+                }
+            }
+            easelGenerateBtn.addEventListener('click', handleImageGeneration);
+            easelDownloadBtn.addEventListener('click', () => {
+                const link = document.createElement('a');
+                link.href = easelImage.src;
+                link.download = 'aron-easel-generation.png';
+                link.click();
+            });
+
+            // --- Analyst Functionality ---
+            csvUploadBtn.addEventListener('click', () => csvUpload.click());
+            csvUpload.addEventListener('change', async (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                analystSpinner.classList.remove('hidden');
+                analystOutput.classList.add('hidden');
+
+                const csvText = await file.text();
+                const prompt = `Analyze the following CSV data. Provide a brief, insightful summary (max 3 sentences). Identify the best chart type (bar, line, or pie) to visualize a key relationship in the data. Specify the column to be used for the labels and the column for the data values. \n\nCSV Data:\n${csvText}`;
+                const payload = {
+                    contents: [{ role: "user", parts: [{ text: prompt }] }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "OBJECT",
+                            properties: {
+                                "analysisText": { "type": "STRING" },
+                                "chartType": { "type": "STRING", "enum": ["bar", "line", "pie"] },
+                                "labelsColumn": { "type": "STRING" },
+                                "dataColumn": { "type": "STRING" }
+                            },
+                            required: ["analysisText", "chartType", "labelsColumn", "dataColumn"]
+                        }
+                    }
+                };
+                const result = await callGemini(payload);
+
+                analystSpinner.classList.add('hidden');
+
+                if (result && result.candidates) {
+                    const analysis = JSON.parse(result.candidates[0].content.parts[0].text);
+                    const { header, data } = parseCSV(csvText);
+                    displayAnalysis(analysis, data);
+                } else {
+                    analystText.textContent = "Could not analyze the data.";
+                    analystOutput.classList.remove('hidden');
+                }
+            });
+
+            function parseCSV(text) {
+                const rows = text.trim().split('\n');
+                const header = rows.shift().split(',').map(h => h.trim());
+                const data = rows.map(row => {
+                    const values = row.split(',');
+                    return header.reduce((obj, h, i) => {
+                        obj[h] = values[i] ? values[i].trim() : '';
+                        return obj;
+                    }, {});
+                });
+                return { header, data };
+            }
+
+            function displayAnalysis(analysis, data) {
+                analystText.textContent = analysis.analysisText;
+                const labels = data.map(row => row[analysis.labelsColumn]);
+                const values = data.map(row => parseFloat(row[analysis.dataColumn]));
+
+                if (chartInstance) chartInstance.destroy();
+                Chart.defaults.color = '#ccc';
+                Chart.defaults.borderColor = '#444';
+                chartInstance = new Chart(analystChartEl, {
+                    type: analysis.chartType,
+                    data: {
+                        labels,
+                        datasets: [{
+                            label: `${analysis.dataColumn} by ${analysis.labelsColumn}`,
+                            data: values,
+                            backgroundColor: 'rgba(79, 70, 229, 0.6)',
+                            borderColor: 'rgba(79, 70, 229, 1)',
+                            borderWidth: 1,
+                            hoverBackgroundColor: 'rgba(79, 70, 229, 0.8)'
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: true, scales: { y: { beginAtZero: true, grid: { color: '#444' } }, x: { grid: { color: '#444' } } }, plugins: { legend: { labels: { color: '#fff' } } } }
+                });
+                analystOutput.classList.remove('hidden');
+            }
+
+            // --- Code Companion Functionality ---
+            async function handleCodeGeneration() {
+                const prompt = codePrompt.value.trim();
+                const language = codeLanguage.value;
+                if (!prompt) return;
+
+                codeSpinner.classList.remove('hidden');
+                codeText.classList.add('hidden');
+                codeGenerateBtn.disabled = true;
+                codeOutput.textContent = 'Generating code...';
+                codeCopyBtn.classList.add('hidden');
+
+                const fullPrompt = `Generate a code snippet in ${language} for the following task: ${prompt}. Only return the code itself inside a single markdown block.`;
+                const result = await callGemini({ contents: [{ role: "user", parts: [{ text: fullPrompt }] }] });
+
+                codeSpinner.classList.add('hidden');
+                codeText.classList.remove('hidden');
+                codeGenerateBtn.disabled = false;
+
+                if (result && result.candidates) {
+                    let code = result.candidates[0].content.parts[0].text;
+                    // Clean up markdown fences
+                    code = code.replace(/^```(?:\w+\n)?/, '').replace(/```$/, '');
+                    codeOutput.textContent = code;
+                    codeCopyBtn.classList.remove('hidden');
+                } else {
+                    codeOutput.textContent = 'Failed to generate code.';
+                }
+            }
+            codeGenerateBtn.addEventListener('click', handleCodeGeneration);
+            codeCopyBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(codeOutput.textContent).then(() => {
+                    codeCopyBtn.textContent = 'Copied!';
+                    setTimeout(() => { codeCopyBtn.textContent = 'Copy'; }, 2000);
+                });
+            });
+
+            // --- Audio Scribe Functionality (Mockup) ---
+            audioUploadBtn.addEventListener('click', () => audioUpload.click());
+            audioUpload.addEventListener('change', (event) => {
+                if (!event.target.files[0]) return;
+                audioSpinner.classList.remove('hidden');
+                audioOutput.classList.add('hidden');
+                setTimeout(() => {
+                    audioSpinner.classList.add('hidden');
+                    audioText.textContent = "This is a simulated transcription. In a real application, the audio file would be processed by a speech-to-text AI model to generate an accurate transcript here.";
+                    audioOutput.classList.remove('hidden');
+                }, 2000);
+            });
+            
+            // --- Settings Functionality ---
+            typingToggle.addEventListener('change', (e) => {
+                enableTypingEffect = e.target.checked;
+            });
+
+            // --- Initial Setup ---
+            function initialize() {
+                chatHistory.push(
+                    { role: "user", parts: [{ text: "You are Aron, a helpful and friendly AI assistant. Keep your answers concise and professional." }] },
+                    { role: "model", parts: [{ text: "Welcome to Aron. I am your AI assistant. How may I help you today?" }] }
+                );
+                appendMessage('aron', "Welcome to Aron. I am your AI assistant. How may I help you today?", true);
+            }
+
+            initialize();
+        });
+    </script>
+</body>
+</html>
