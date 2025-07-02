@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aron</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --theme-color: #4f46e5;
+            --theme-color-translucent: #4f46e533;
+            --font-size-base: 16px;
+            --glass-blur: 12px;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0a;
+            font-size: var(--font-size-base);
+        }
+        #animated-bg-blob {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            overflow: hidden;
+        }
+        .blob {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(180deg, var(--theme-color), #9333ea);
+            border-radius: 50%;
+            filter: blur(150px);
+            opacity: 0.2;
+            animation: move 25s infinite alternate;
+        }
+        .blob:nth-child(2) {
+            width: 300px;
+            height: 300px;
+            animation-delay: -5s;
+            animation-duration: 20s;
+        }
+        @keyframes move {
+            from { transform: translate(-100px, -50px) rotate(-90deg); }
+            to { transform: translate(calc(100vw - 400px), calc(100vh - 400px)) rotate(90deg); }
+        }
+        .main-content {
+            background: transparent;
+        }
+        .glass-panel {
+            background: rgba(20, 20, 20, 0.5);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .scrollable-content::-webkit-scrollbar { width: 6px; }
+        .scrollable-content::-webkit-scrollbar-thumb { background-color: var(--theme-color); border-radius: 20px; }
+        
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .typing-cursor {
+            display: inline-block;
+            width: 8px;
+            height: 1em;
+            background-color: var(--theme-color);
+            animation: blink 1s step-end infinite;
+            vertical-align: bottom;
+        }
+        @keyframes blink {
+            from, to { background-color: transparent; }
+            50% { background-color: var(--theme-color); }
+        }
+        .btn-primary {
+            background-color: var(--theme-color);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px var(--theme-color-translucent), 0 0 5px var(--theme-color);
+        }
+        .nav-link.active {
+            background-color: var(--theme-color-translucent);
+            border: 1px solid var(--theme-color);
+            color: white;
+        }
+        .nav-link.active .active-indicator { opacity: 1; background-color: var(--theme-color); }
+
+        /* Mobile specific styles */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                width: 100%;
+                height: auto;
+                flex-direction: row;
+                justify-content: space-around;
+                padding: 8px;
+                z-index: 50;
+                overflow-x: auto;
+            }
+            .sidebar h1, .sidebar #settings-tab span:last-child { display: none; }
+            .sidebar nav { flex-direction: row; gap: 4px; }
+            .main-content { padding-bottom: 80px; }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    <div id="animated-bg-blob">
+        <div class="blob"></div>
+        <div class="blob"></div>
+    </div>
+
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <aside class="w-64 glass-panel p-4 flex flex-col shrink-0 justify-between sidebar">
+            <h1 class="text-3xl font-bold text-indigo-400 mb-8 tracking-wider">ARON</h1>
+            <nav class="flex flex-col md:flex-col space-y-1">
+                 <a href="#" id="chat-tab" class="nav-link flex items-center justify-center md:justify-start space-x-3 py-3 px-4 rounded-lg transition-all duration-300" title="Chat">
+                    <span class="active-indicator opacity-0 w-1 h-1 rounded-full glow-effect"></span>
+                    <span>💬</span><span class="hidden md:inline">Chat</span>
+                </a>
+                <a href="#" id="vision-tab" class="nav-link flex items-center justify-center md:justify-start space-x-3 py-3 px-4 rounded-lg transition-all duration-300" title="Vision">
+                    <span class="active-indicator opacity-0 w-1 h-1 rounded-full glow-effect"></span>
+                    <span>👁️</span><span class="hidden md:inline">Vision</span>
+                </a>
+                <a href="#" id="easel-tab" class="nav-link flex items-center justify-center md:justify-start space-x-3 py-3 px-4 rounded-lg transition-all duration-300" title="Easel">
+                    <span class="active-indicator opacity-0 w-1 h-1 rounded-full glow-effect"></span>
+                    <span>🎨</span><span class="hidden md:inline">Easel</span>
+                </a>
+                <a href="#" id="planner-tab" class="nav-link flex items-center justify-center md:justify-start space-x-3 py-3 px-4 rounded-lg transition-all duration-300" title="Planner">
+                    <span class="active-indicator opacity-0 w-1 h-1 rounded-full glow-effect"></span>
+                    <span>🗓️</span><span class="hidden md:inline">Planner</span>
+                </a>
+                 <a href="#" id="code-tab" class="nav-link flex items-center justify-center md:justify-start space-x-3 py-3 px-4 rounded-lg transition-all duration-300" title="Code Companion">
+                     <span class="active-indicator opacity-0 w-1 h-1 rounded-full glow-effect"></span>
+                    <span>💻</span><span class="hidden md:inline">Code</span>
+                </a>
+                 <a href="#" id="recipe-tab" class="nav-link flex items-center justify-center md:justify-start space-x-3 py-3 px-4 rounded-lg transition-all duration-300" title="Recipe Creator">
+                     <span class="active-indicator opacity-0 w-1 h-1 rounded-full glow-effect"></span>
+                    <span>🍳</span><span class="hidden md:inline">Recipe</span>
+                </a>
+                <a href="#" id="docu-synth-tab" class="nav-link flex items-center justify-center md:justify-start space-x-3 py-3 px-4 rounded-lg transition-all duration-300" title="Docu-Synth">
+                    <span class="active-indicator opacity-0 w-1 h-1 rounded-full glow-effect"></span>
+                    <span>📄</span><span class="hidden md:inline">Docu-Synth</span>
+                </a>
+                <a href="#" id="translator-tab" class="nav-link flex items-center justify-center md:justify-start space-x-3 py-3 px-4 rounded-lg transition-all duration-300" title="Translator">
+                    <span class="active-indicator opacity-0 w-1 h-1 rounded-full glow-effect"></span>
+                    <span>🌐</span><span class="hidden md:inline">Translator</span>
+                </a>
+                 <a href="#" id="sentiment-tab" class="nav-link flex items-center justify-center md:justify-start space-x-3 py-3 px-4 rounded-lg transition-all duration-300" title="Sentiment Analyzer">
+                    <span class="active-indicator opacity-0 w-1 h-1 rounded-full glow-effect"></span>
+                    <span>😊</span><span class="hidden md:inline">Sentiment</span>
+                </a>
+                 <a href="#" id="email-tab" class="nav-link flex items-center justify-center md:justify-start space-x-3 py-3 px-4 rounded-lg transition-all duration-300" title="Email Writer">
+                    <span class="active-indicator opacity-0 w-1 h-1 rounded-full glow-effect"></span>
+                    <span>✉️</span><span class="hidden md:inline">Email</span>
+                </a>
+            </nav>
+            <a href="#" id="settings-tab" class="nav-link flex items-center justify-center md:justify-start space-x-3 py-3 px-4 rounded-lg transition-all duration-300" title="Settings">
+                <span class="active-indicator opacity-0 w-1 h-1 rounded-full glow-effect"></span>
+                <span>⚙️</span><span class="hidden md:inline">Settings</span>
+            </a>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col min-w-0 main-content">
+            <!-- Chat Interface -->
+            <div id="chat-interface" class="interface-panel flex flex-col h-full">
+                <div class="chat-container flex-1 p-6 overflow-y-auto scrollable-content"></div>
+                 <div id="smart-reply-container" class="px-6 pb-2 flex items-center gap-2 flex-wrap"></div>
+                <div class="p-4 bg-gray-900/50 border-t border-gray-700/50">
+                    <div class="relative">
+                        <input type="text" id="chat-input" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-300" placeholder="Ask Aron anything...">
+                        <button id="send-btn" class="absolute right-2 top-1/2 -translate-y-1/2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center w-24 btn-primary">
+                            <span id="send-text">Send</span>
+                            <div id="send-spinner" class="spinner hidden"></div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vision Interface -->
+            <div id="vision-interface" class="interface-panel hidden h-full flex flex-col items-center justify-center p-4 md:p-8">
+                <div class="w-full max-w-4xl glass-panel p-4 md:p-8 rounded-2xl">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-2 text-center text-indigo-400">Vision</h2>
+                    <p class="text-gray-400 mb-6 text-center">✨ Upload an image and ask questions about it.</p>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="flex flex-col items-center">
+                            <input type="file" id="vision-upload" class="hidden" accept="image/*">
+                            <button id="vision-upload-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg mb-4 btn-primary">Upload Image</button>
+                            <div class="w-full aspect-square bg-black/30 border border-gray-700 rounded-lg flex items-center justify-center">
+                                <img id="vision-preview" class="hidden w-full h-full object-contain rounded-lg"/>
+                                <p id="vision-placeholder" class="text-gray-500">Preview</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col">
+                            <textarea id="vision-prompt" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4" rows="4" placeholder="e.g., What color is the car?"></textarea>
+                            <button id="vision-ask-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-5 rounded-lg w-full btn-primary mb-4">Ask</button>
+                            <div id="vision-output" class="w-full bg-gray-800/50 border border-gray-700 p-4 rounded-lg min-h-[100px] flex-1 scrollable-content overflow-y-auto">
+                                <p id="vision-answer"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Easel Interface -->
+            <div id="easel-interface" class="interface-panel hidden h-full flex flex-col items-center justify-center p-4 md:p-8">
+                 <div class="text-center w-full max-w-2xl glass-panel p-8 rounded-2xl">
+                    <h2 class="text-4xl font-bold mb-2 text-indigo-400">Aron's Easel</h2>
+                    <p class="text-gray-400 mb-6">✨ Describe an image, and watch AI bring it to life.</p>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <input type="text" id="easel-prompt" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g., A photorealistic cat astronaut on Mars">
+                        <button id="easel-generate-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-5 rounded-lg flex items-center justify-center w-36 btn-primary">
+                             <span id="easel-text">Generate</span>
+                             <div id="easel-spinner" class="spinner hidden"></div>
+                        </button>
+                    </div>
+                    <div id="easel-output" class="bg-black/30 border border-gray-700 w-full aspect-square rounded-lg flex items-center justify-center transition-all duration-500 relative">
+                        <p id="easel-placeholder" class="text-gray-500">Image will be generated here.</p>
+                        <img id="easel-image" src="" class="hidden w-full h-full object-contain rounded-lg"/>
+                        <div id="easel-output-spinner" class="spinner hidden"></div>
+                        <button id="easel-download-btn" class="hidden absolute bottom-4 right-4 bg-black/50 hover:bg-black/80 text-white font-bold py-2 px-4 rounded-lg btn-primary">Download</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project Planner Interface -->
+            <div id="planner-interface" class="interface-panel hidden h-full flex flex-col items-center justify-center p-4 md:p-8">
+                <div class="w-full max-w-4xl glass-panel p-4 md:p-8 rounded-2xl">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-2 text-center text-indigo-400">Project Planner</h2>
+                    <p class="text-gray-400 mb-6 text-center">✨ Describe your project, and Aron will generate a plan.</p>
+                    <textarea id="planner-prompt" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4" rows="4" placeholder="e.g., Plan a marketing campaign for a new mobile app."></textarea>
+                    <button id="planner-generate-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-5 rounded-lg w-full btn-primary mb-4">Generate Plan</button>
+                    <div id="planner-output" class="w-full bg-gray-800/50 border border-gray-700 p-4 rounded-lg min-h-[200px] scrollable-content overflow-y-auto"></div>
+                </div>
+            </div>
+
+            <!-- Code Companion Interface -->
+            <div id="code-interface" class="interface-panel hidden h-full flex flex-col p-4 md:p-8">
+                <div class="w-full max-w-4xl mx-auto glass-panel p-8 rounded-2xl">
+                    <h2 class="text-4xl font-bold mb-2 text-indigo-400">Code Companion</h2>
+                    <p class="text-gray-400 mb-6">✨ Your AI pair programmer. Describe what you want to build.</p>
+                    <textarea id="code-prompt" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="3" placeholder="e.g., A python function that returns the factorial of a number"></textarea>
+                    <div class="flex items-center space-x-2 my-4">
+                        <select id="code-language" class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option>JavaScript</option><option>Python</option><option>HTML</option><option>CSS</option><option>SQL</option>
+                        </select>
+                        <button id="code-generate-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-5 rounded-lg flex items-center justify-center w-36 btn-primary">
+                             <span id="code-text">Generate</span><div id="code-spinner" class="spinner hidden"></div>
+                        </button>
+                    </div>
+                    <div class="relative">
+                        <pre id="code-output" class="code-output p-4 rounded-lg h-96 overflow-y-auto border border-gray-700 scrollable-content"></pre>
+                        <button id="code-copy-btn" class="hidden absolute top-4 right-4 bg-black/50 hover:bg-black/80 text-white font-bold py-1 px-3 rounded-lg btn-primary">Copy</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recipe Creator Interface -->
+            <div id="recipe-interface" class="interface-panel hidden h-full flex flex-col items-center justify-center p-4 md:p-8">
+                <div class="w-full max-w-4xl glass-panel p-4 md:p-8 rounded-2xl">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-2 text-center text-indigo-400">Recipe Creator</h2>
+                    <p class="text-gray-400 mb-6 text-center">✨ List your ingredients, and Aron will create a recipe.</p>
+                    <textarea id="recipe-prompt" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4" rows="4" placeholder="e.g., chicken breast, rice, broccoli, soy sauce"></textarea>
+                    <button id="recipe-generate-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-5 rounded-lg w-full btn-primary mb-4">Create Recipe</button>
+                    <div id="recipe-output" class="w-full bg-gray-800/50 border border-gray-700 p-4 rounded-lg min-h-[200px] scrollable-content overflow-y-auto"></div>
+                </div>
+            </div>
+            
+            <!-- Docu-Synth Interface -->
+            <div id="docu-synth-interface" class="interface-panel hidden h-full flex flex-col items-center justify-center p-8">
+                 <div class="w-full max-w-4xl glass-panel p-8 rounded-2xl">
+                    <h2 class="text-4xl font-bold mb-2 text-center text-indigo-400">Docu-Synth</h2>
+                    <p class="text-gray-400 mb-6 text-center">✨ Upload a text file and get a concise AI-powered summary.</p>
+                    <input type="file" id="doc-upload" class="hidden" accept=".txt">
+                    <button id="doc-upload-btn" class="block mx-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg mb-6 btn-primary">Upload .txt File</button>
+                    <div id="doc-output" class="hidden w-full bg-gray-800/50 border border-gray-700 p-6 rounded-lg min-h-[200px] scrollable-content overflow-y-auto">
+                        <h3 class="font-bold text-xl mb-3 text-indigo-400">Summary</h3>
+                        <p id="doc-summary" class="text-gray-300 text-left"></p>
+                    </div>
+                    <div id="doc-spinner" class="spinner hidden mx-auto"></div>
+                 </div>
+            </div>
+
+            <!-- Global Translator Interface -->
+            <div id="translator-interface" class="interface-panel hidden h-full flex flex-col items-center justify-center p-8">
+                 <div class="w-full max-w-4xl glass-panel p-8 rounded-2xl">
+                    <h2 class="text-4xl font-bold mb-2 text-center text-indigo-400">Global Translator</h2>
+                    <p class="text-gray-400 mb-6 text-center">✨ Translate text into any language with AI precision.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block mb-2 text-gray-400">Original Text</label>
+                            <textarea id="translate-input" class="w-full h-48 bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                        </div>
+                        <div>
+                            <label class="block mb-2 text-gray-400">Translated Text</label>
+                            <textarea id="translate-output" class="w-full h-48 bg-gray-800 border border-gray-700 rounded-lg p-3 text-white" readonly></textarea>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-center space-x-4 mt-4">
+                         <select id="translate-language" class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option>Spanish</option><option>French</option><option>German</option><option>Japanese</option><option>Chinese</option><option>Russian</option>
+                        </select>
+                        <button id="translate-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-5 rounded-lg flex items-center justify-center w-36 btn-primary">
+                             <span id="translate-text">Translate</span>
+                             <div id="translate-spinner" class="spinner hidden"></div>
+                        </button>
+                    </div>
+                 </div>
+            </div>
+
+            <!-- Sentiment Analyzer Interface -->
+            <div id="sentiment-interface" class="interface-panel hidden h-full flex flex-col items-center justify-center p-8">
+                <div class="w-full max-w-4xl glass-panel p-8 rounded-2xl">
+                    <h2 class="text-4xl font-bold mb-2 text-center text-indigo-400">Sentiment Analyzer</h2>
+                    <p class="text-gray-400 mb-6 text-center">✨ Analyze the sentiment of any text.</p>
+                    <textarea id="sentiment-input" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4" rows="6" placeholder="Enter text to analyze..."></textarea>
+                    <button id="sentiment-analyze-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-5 rounded-lg w-full btn-primary mb-4">Analyze</button>
+                    <div id="sentiment-output" class="hidden w-full text-center">
+                        <p class="text-2xl font-bold" id="sentiment-result"></p>
+                        <p class="text-lg text-gray-400" id="sentiment-score"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Email Writer Interface -->
+            <div id="email-interface" class="interface-panel hidden h-full flex flex-col items-center justify-center p-8">
+                <div class="w-full max-w-4xl glass-panel p-8 rounded-2xl">
+                    <h2 class="text-4xl font-bold mb-2 text-center text-indigo-400">Email Writer</h2>
+                    <p class="text-gray-400 mb-6 text-center">✨ Let Aron draft professional emails for you.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <input type="text" id="email-recipient" class="bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Recipient">
+                        <select id="email-tone" class="bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option>Professional</option><option>Friendly</option><option>Urgent</option><option>Formal</option>
+                        </select>
+                    </div>
+                    <textarea id="email-prompt" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4" rows="4" placeholder="Email objective, e.g., Ask for a meeting next week to discuss the project proposal."></textarea>
+                    <button id="email-generate-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-5 rounded-lg w-full btn-primary mb-4">Draft Email</button>
+                    <div id="email-output" class="w-full bg-gray-800/50 border border-gray-700 p-4 rounded-lg min-h-[200px] scrollable-content overflow-y-auto"></div>
+                </div>
+            </div>
+
+            <!-- Settings Interface -->
+            <div id="settings-interface" class="interface-panel hidden h-full flex flex-col p-4 md:p-8">
+                 <div class="w-full max-w-2xl mx-auto glass-panel p-8 rounded-2xl scrollable-content overflow-y-auto">
+                    <h2 class="text-4xl font-bold mb-6 text-indigo-400">Settings</h2>
+                    <div class="space-y-6">
+                        <div class="flex justify-between items-center">
+                            <label for="typing-toggle" class="text-lg">AI Typing Effect</label>
+                            <input type="checkbox" id="typing-toggle" class="form-checkbox h-5 w-5 text-indigo-600 bg-gray-700 border-gray-600 rounded focus:ring-indigo-500" checked/>
+                        </div>
+                        <div class="flex flex-col space-y-2">
+                            <label for="font-size-slider" class="text-lg">Font Size: <span id="font-size-value">16px</span></label>
+                            <input type="range" id="font-size-slider" min="12" max="20" value="16" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                        </div>
+                        <div class="flex flex-col space-y-2">
+                            <label for="glass-blur-slider" class="text-lg">Glass Blur: <span id="glass-blur-value">12px</span></label>
+                            <input type="range" id="glass-blur-slider" min="0" max="24" value="12" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                        </div>
+                         <div class="flex flex-col space-y-2">
+                            <label class="text-lg">Theme Color</label>
+                            <div id="theme-picker" class="flex space-x-3">
+                                <button class="theme-btn w-8 h-8 rounded-full bg-indigo-600 border-2 border-white" data-color="#4f46e5"></button>
+                                <button class="theme-btn w-8 h-8 rounded-full bg-pink-600" data-color="#db2777"></button>
+                                <button class="theme-btn w-8 h-8 rounded-full bg-teal-600" data-color="#0d9488"></button>
+                                <button class="theme-btn w-8 h-8 rounded-full bg-amber-500" data-color="#f59e0b"></button>
+                            </div>
+                        </div>
+                        <div class="flex flex-col space-y-2">
+                            <label for="persona-select" class="text-lg">Aron's Persona</label>
+                            <select id="persona-select" class="bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="professional">Professional Assistant</option><option value="creative">Creative Partner</option><option value="humorous">Humorous Sidekick</option><option value="socratic">Socratic Tutor</option>
+                            </select>
+                        </div>
+                        <div class="flex space-x-4">
+                            <button id="persona-apply-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg btn-primary">Apply & Reset Chat</button>
+                            <button id="clear-history-btn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg btn-primary">Clear Chat History</button>
+                        </div>
+                        <div class="flex space-x-4">
+                            <button id="export-chat-btn" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded-lg btn-primary">Export Chat</button>
+                            <button id="export-settings-btn" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded-lg btn-primary">Export Settings</button>
+                        </div>
+                        <div class="flex space-x-4">
+                            <input type="file" id="import-settings-input" class="hidden" accept=".json">
+                            <button id="import-settings-btn" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded-lg btn-primary">Import Settings</button>
+                            <button id="reset-all-btn" class="w-full bg-red-800 hover:bg-red-900 text-white font-bold py-2 px-4 rounded-lg btn-primary">Reset All</button>
+                        </div>
+                    </div>
+                 </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Element References ---
+            const allTabs = {
+                chat: { tab: document.getElementById('chat-tab'), interface: document.getElementById('chat-interface') },
+                vision: { tab: document.getElementById('vision-tab'), interface: document.getElementById('vision-interface') },
+                easel: { tab: document.getElementById('easel-tab'), interface: document.getElementById('easel-interface') },
+                planner: { tab: document.getElementById('planner-tab'), interface: document.getElementById('planner-interface') },
+                code: { tab: document.getElementById('code-tab'), interface: document.getElementById('code-interface') },
+                recipe: { tab: document.getElementById('recipe-tab'), interface: document.getElementById('recipe-interface') },
+                docuSynth: { tab: document.getElementById('docu-synth-tab'), interface: document.getElementById('docu-synth-interface') },
+                translator: { tab: document.getElementById('translator-tab'), interface: document.getElementById('translator-interface') },
+                sentiment: { tab: document.getElementById('sentiment-tab'), interface: document.getElementById('sentiment-interface') },
+                email: { tab: document.getElementById('email-tab'), interface: document.getElementById('email-interface') },
+                settings: { tab: document.getElementById('settings-tab'), interface: document.getElementById('settings-interface') },
+            };
+
+            // UI Elements
+            const chatInput = document.getElementById('chat-input'), sendBtn = document.getElementById('send-btn'), sendText = document.getElementById('send-text'), sendSpinner = document.getElementById('send-spinner'), chatContainer = document.querySelector('.chat-container'), smartReplyContainer = document.getElementById('smart-reply-container');
+            const visionUploadBtn = document.getElementById('vision-upload-btn'), visionUpload = document.getElementById('vision-upload'), visionPreview = document.getElementById('vision-preview'), visionPlaceholder = document.getElementById('vision-placeholder'), visionPrompt = document.getElementById('vision-prompt'), visionAskBtn = document.getElementById('vision-ask-btn'), visionAnswer = document.getElementById('vision-answer');
+            const easelPrompt = document.getElementById('easel-prompt'), easelGenerateBtn = document.getElementById('easel-generate-btn'), easelText = document.getElementById('easel-text'), easelSpinner = document.getElementById('easel-spinner'), easelOutput = document.getElementById('easel-output'), easelPlaceholder = document.getElementById('easel-placeholder'), easelImage = document.getElementById('easel-image'), easelOutputSpinner = document.getElementById('easel-output-spinner'), easelDownloadBtn = document.getElementById('easel-download-btn');
+            const plannerPrompt = document.getElementById('planner-prompt'), plannerGenerateBtn = document.getElementById('planner-generate-btn'), plannerOutput = document.getElementById('planner-output');
+            const codePrompt = document.getElementById('code-prompt'), codeLanguage = document.getElementById('code-language'), codeGenerateBtn = document.getElementById('code-generate-btn'), codeText = document.getElementById('code-text'), codeSpinner = document.getElementById('code-spinner'), codeOutput = document.getElementById('code-output'), codeCopyBtn = document.getElementById('code-copy-btn');
+            const recipePrompt = document.getElementById('recipe-prompt'), recipeGenerateBtn = document.getElementById('recipe-generate-btn'), recipeOutput = document.getElementById('recipe-output');
+            const docUploadBtn = document.getElementById('doc-upload-btn'), docUpload = document.getElementById('doc-upload'), docOutput = document.getElementById('doc-output'), docSummary = document.getElementById('doc-summary'), docSpinner = document.getElementById('doc-spinner');
+            const translateInput = document.getElementById('translate-input'), translateOutput = document.getElementById('translate-output'), translateLanguage = document.getElementById('translate-language'), translateBtn = document.getElementById('translate-btn'), translateText = document.getElementById('translate-text'), translateSpinner = document.getElementById('translate-spinner');
+            const sentimentInput = document.getElementById('sentiment-input'), sentimentAnalyzeBtn = document.getElementById('sentiment-analyze-btn'), sentimentOutput = document.getElementById('sentiment-output'), sentimentResult = document.getElementById('sentiment-result'), sentimentScore = document.getElementById('sentiment-score');
+            const emailRecipient = document.getElementById('email-recipient'), emailTone = document.getElementById('email-tone'), emailPrompt = document.getElementById('email-prompt'), emailGenerateBtn = document.getElementById('email-generate-btn'), emailOutput = document.getElementById('email-output');
+            const typingToggle = document.getElementById('typing-toggle'), personaSelect = document.getElementById('persona-select'), personaApplyBtn = document.getElementById('persona-apply-btn'), clearHistoryBtn = document.getElementById('clear-history-btn'), exportChatBtn = document.getElementById('export-chat-btn'), themePicker = document.getElementById('theme-picker'), fontSizeSlider = document.getElementById('font-size-slider'), fontSizeValue = document.getElementById('font-size-value'), glassBlurSlider = document.getElementById('glass-blur-slider'), glassBlurValue = document.getElementById('glass-blur-value'), exportSettingsBtn = document.getElementById('export-settings-btn'), importSettingsInput = document.getElementById('import-settings-input'), importSettingsBtn = document.getElementById('import-settings-btn'), resetAllBtn = document.getElementById('reset-all-btn');
+
+            let chatHistory = [], enableTypingEffect = true, currentPersona = "professional", visionBase64 = null;
+
+            const personaPrompts = {
+                professional: "You are Aron, a helpful and friendly AI assistant. Keep your answers concise and professional.",
+                creative: "You are Aron, an imaginative and creative AI partner. Your answers should be inspiring and think outside the box.",
+                humorous: "You are Aron, a witty and humorous AI sidekick. Your answers should be clever and funny, but still helpful.",
+                socratic: "You are Aron, a tutor who uses the Socratic method. Instead of giving direct answers, ask insightful questions to help the user learn and discover the answer themselves."
+            };
+
+            // --- Tab Navigation ---
+            function switchTab(tabKey) {
+                Object.values(allTabs).forEach(({ tab, interface: intf }) => {
+                    tab.classList.remove('active');
+                    if (intf) intf.classList.add('hidden');
+                });
+                const active = allTabs[tabKey];
+                active.tab.classList.add('active');
+                if (active.interface) active.interface.classList.remove('hidden');
+            }
+            Object.keys(allTabs).forEach(key => allTabs[key].tab.addEventListener('click', (e) => { e.preventDefault(); switchTab(key); }));
+            
+            // --- Gemini API Calls ---
+            const GEMINI_API_KEY = ""; // Provided by environment
+            async function callGemini(payload, model = 'gemini-2.0-flash') {
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+                try {
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                    return await response.json();
+                } catch (error) { console.error(`Gemini API Error (${model}):`, error); return null; }
+            }
+            
+            async function callImagen(prompt) {
+                const payload = { instances: [{ prompt }], parameters: { "sampleCount": 1 } };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${GEMINI_API_KEY}`;
+                try {
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                    return await response.json();
+                } catch (error) { console.error("Imagen API Error:", error); return null; }
+            }
+
+            // --- Chat Functionality ---
+            function typeWriter(element, text, callback) {
+                if (!enableTypingEffect) {
+                    element.innerHTML = text.replace(/\n/g, '<br>');
+                    if (callback) callback();
+                    return;
+                }
+                let i = 0;
+                element.innerHTML = "";
+                const cursor = document.createElement('span');
+                cursor.className = 'typing-cursor';
+                element.appendChild(cursor);
+                function type() {
+                    if (i < text.length) {
+                        element.insertBefore(document.createTextNode(text.charAt(i)), cursor);
+                        i++;
+                        setTimeout(type, 20);
+                    } else {
+                        cursor.remove();
+                        if (callback) callback();
+                    }
+                }
+                type();
+            }
+
+            function appendMessage(sender, message, isTyping = false) {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('mb-4');
+                const messageBody = document.createElement('div');
+                if (sender === 'user') {
+                    messageElement.innerHTML = `<div class="flex justify-end"><div class="bg-indigo-600 text-white rounded-lg p-3 max-w-lg" style="background-color: var(--theme-color);">${message.replace(/\n/g, '<br>')}</div></div>`;
+                } else {
+                    messageElement.className = 'flex';
+                    messageBody.className = 'glass-panel text-white rounded-lg p-3 max-w-lg';
+                    messageElement.appendChild(messageBody);
+                    if (isTyping) {
+                        typeWriter(messageBody, message, () => generateSmartReplies(message));
+                    } else {
+                        messageBody.innerHTML = message.replace(/\n/g, '<br>');
+                    }
+                }
+                chatContainer.appendChild(messageElement);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+                localStorage.setItem('aronChatHistory', JSON.stringify(chatHistory));
+            }
+
+            async function handleSendMessage(promptOverride = null) {
+                const prompt = promptOverride || chatInput.value.trim();
+                if (!prompt) return;
+                appendMessage('user', prompt);
+                chatInput.value = '';
+                smartReplyContainer.innerHTML = '';
+                sendSpinner.classList.remove('hidden');
+                sendText.classList.add('hidden');
+                sendBtn.disabled = true;
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const result = await callGemini({ contents: chatHistory });
+                sendSpinner.classList.add('hidden');
+                sendText.classList.remove('hidden');
+                sendBtn.disabled = false;
+                if (result && result.candidates) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    chatHistory.push({ role: "model", parts: [{ text: text }] });
+                    appendMessage('aron', text, true);
+                } else {
+                    appendMessage('aron', "Sorry, I encountered an error. Please try again.", false);
+                }
+            }
+            sendBtn.addEventListener('click', () => handleSendMessage());
+            chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleSendMessage(); });
+
+            async function generateSmartReplies(lastMessage) {
+                smartReplyContainer.innerHTML = '';
+                const prompt = `Based on the last message "${lastMessage}", generate 3 short, relevant, one-click replies.`;
+                const payload = {
+                    contents: [{ role: "user", parts: [{ text: prompt }] }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: { type: "OBJECT", properties: { "replies": { "type": "ARRAY", "items": { "type": "STRING" } } }, required: ["replies"] }
+                    }
+                };
+                const result = await callGemini(payload);
+                if (result && result.candidates) {
+                    const { replies } = JSON.parse(result.candidates[0].content.parts[0].text);
+                    replies.slice(0, 3).forEach(reply => {
+                        const button = document.createElement('button');
+                        button.className = 'glass-panel text-sm py-1 px-3 rounded-full hover:bg-indigo-600/50 transition-colors';
+                        button.style.borderColor = 'var(--theme-color)';
+                        button.textContent = reply;
+                        button.onclick = () => handleSendMessage(reply);
+                        smartReplyContainer.appendChild(button);
+                    });
+                }
+            }
+            
+            // --- Vision Functionality ---
+            visionUploadBtn.addEventListener('click', () => visionUpload.click());
+            visionUpload.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        visionPreview.src = event.target.result;
+                        visionPreview.classList.remove('hidden');
+                        visionPlaceholder.classList.add('hidden');
+                        visionBase64 = event.target.result.split(',')[1];
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            visionAskBtn.addEventListener('click', async () => {
+                const prompt = visionPrompt.value.trim();
+                if (!prompt || !visionBase64) {
+                    alert('Please upload an image and ask a question.');
+                    return;
+                }
+                visionAnswer.textContent = 'Analyzing...';
+                const payload = { contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: visionBase64 } }] }] };
+                const result = await callGemini(payload);
+                if (result && result.candidates) {
+                    typeWriter(visionAnswer, result.candidates[0].content.parts[0].text);
+                } else {
+                    visionAnswer.textContent = 'Could not analyze the image.';
+                }
+            });
+
+            // --- Easel Functionality ---
+            easelGenerateBtn.addEventListener('click', async () => {
+                const prompt = easelPrompt.value.trim();
+                if (!prompt) return;
+                easelSpinner.classList.remove('hidden');
+                easelText.classList.add('hidden');
+                easelGenerateBtn.disabled = true;
+                easelPlaceholder.classList.add('hidden');
+                easelImage.classList.add('hidden');
+                easelDownloadBtn.classList.add('hidden');
+                easelOutputSpinner.classList.remove('hidden');
+                easelOutput.classList.add('glow-effect');
+                const result = await callImagen(prompt);
+                easelSpinner.classList.add('hidden');
+                easelText.classList.remove('hidden');
+                easelGenerateBtn.disabled = false;
+                easelOutputSpinner.classList.add('hidden');
+                easelOutput.classList.remove('glow-effect');
+                if (result && result.predictions) {
+                    const imageUrl = `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
+                    easelImage.src = imageUrl;
+                    easelImage.classList.remove('hidden');
+                    easelDownloadBtn.classList.remove('hidden');
+                } else {
+                    easelPlaceholder.textContent = "Failed to generate image. Please try again.";
+                    easelPlaceholder.classList.remove('hidden');
+                }
+            });
+            easelDownloadBtn.addEventListener('click', () => {
+                const link = document.createElement('a');
+                link.href = easelImage.src;
+                link.download = 'aron-easel-generation.png';
+                link.click();
+            });
+
+            // --- Planner & Recipe Functionality ---
+            async function generateMarkdownContent(prompt, outputElement) {
+                if (!prompt) return;
+                outputElement.innerHTML = '<div class="spinner mx-auto"></div>';
+                const result = await callGemini({ contents: [{ role: "user", parts: [{ text: prompt }] }] });
+                if (result && result.candidates) {
+                    let html = result.candidates[0].content.parts[0].text
+                        .replace(/### (.*)/g, '<h3 class="text-xl font-bold text-indigo-400 mt-4 mb-2">$1</h3>')
+                        .replace(/## (.*)/g, '<h2 class="text-2xl font-bold text-indigo-300 mt-6 mb-3">$1</h2>')
+                        .replace(/\* \*(.*)\* \*/g, '<strong>$1</strong>')
+                        .replace(/\* (.*)/g, '<li class="ml-4 list-disc">$1</li>')
+                        .replace(/\n/g, '<br>');
+                    outputElement.innerHTML = html;
+                } else {
+                    outputElement.textContent = 'Could not generate content.';
+                }
+            }
+            plannerGenerateBtn.addEventListener('click', () => generateMarkdownContent(`Generate a project plan based on this description: "${plannerPrompt.value}". Use markdown for structure.`, plannerOutput));
+            recipeGenerateBtn.addEventListener('click', () => generateMarkdownContent(`Create a recipe using these ingredients: "${recipePrompt.value}". Structure it with a title, ingredients list, and instructions using markdown.`, recipeOutput));
+
+            // --- Code Companion Functionality ---
+            codeGenerateBtn.addEventListener('click', async () => {
+                const prompt = codePrompt.value.trim();
+                const language = codeLanguage.value;
+                if (!prompt) return;
+                codeSpinner.classList.remove('hidden');
+                codeText.classList.add('hidden');
+                codeGenerateBtn.disabled = true;
+                codeOutput.textContent = 'Generating code...';
+                codeCopyBtn.classList.add('hidden');
+                const fullPrompt = `Generate a code snippet in ${language} for the following task: ${prompt}. Only return the code itself inside a single markdown block.`;
+                const result = await callGemini({ contents: [{ role: "user", parts: [{ text: fullPrompt }] }] });
+                codeSpinner.classList.add('hidden');
+                codeText.classList.remove('hidden');
+                codeGenerateBtn.disabled = false;
+                if (result && result.candidates) {
+                    let code = result.candidates[0].content.parts[0].text.replace(/^```(?:\w+\n)?/, '').replace(/```$/, '');
+                    codeOutput.textContent = code;
+                    codeCopyBtn.classList.remove('hidden');
+                } else {
+                    codeOutput.textContent = 'Failed to generate code.';
+                }
+            });
+            codeCopyBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(codeOutput.textContent).then(() => {
+                    codeCopyBtn.textContent = 'Copied!';
+                    setTimeout(() => { codeCopyBtn.textContent = 'Copy'; }, 2000);
+                });
+            });
+
+            // --- Docu-Synth Functionality ---
+            docUploadBtn.addEventListener('click', () => docUpload.click());
+            docUpload.addEventListener('change', async (event) => {
+                const file = event.target.files[0];
+                if (!file || file.type !== 'text/plain') {
+                    alert('Please upload a .txt file.');
+                    return;
+                }
+                docSpinner.classList.remove('hidden');
+                docOutput.classList.add('hidden');
+                const text = await file.text();
+                const prompt = `Summarize the following document concisely:\n\n${text}`;
+                const result = await callGemini({ contents: [{ role: "user", parts: [{ text: prompt }] }] });
+                docSpinner.classList.add('hidden');
+                docOutput.classList.remove('hidden');
+                if (result && result.candidates) {
+                    typeWriter(docSummary, result.candidates[0].content.parts[0].text);
+                } else {
+                    docSummary.textContent = 'Could not summarize the document.';
+                }
+            });
+
+            // --- Translator Functionality ---
+            translateBtn.addEventListener('click', async () => {
+                const text = translateInput.value.trim();
+                const language = translateLanguage.value;
+                if (!text) return;
+                translateSpinner.classList.remove('hidden');
+                translateText.classList.add('hidden');
+                translateBtn.disabled = true;
+                const prompt = `Translate the following text to ${language}: "${text}"`;
+                const result = await callGemini({ contents: [{ role: "user", parts: [{ text: prompt }] }] });
+                translateSpinner.classList.add('hidden');
+                translateText.classList.remove('hidden');
+                translateBtn.disabled = false;
+                if (result && result.candidates) {
+                    translateOutput.value = result.candidates[0].content.parts[0].text;
+                } else {
+                    translateOutput.value = 'Translation failed.';
+                }
+            });
+
+            // --- Sentiment Analyzer Functionality ---
+            sentimentAnalyzeBtn.addEventListener('click', async () => {
+                const text = sentimentInput.value.trim();
+                if (!text) return;
+                sentimentOutput.classList.add('hidden');
+                const prompt = `Analyze the sentiment of the following text. Respond with only a JSON object with two keys: "sentiment" (either "Positive", "Negative", or "Neutral") and "score" (a number between 0 and 1). Text: "${text}"`;
+                const payload = {
+                    contents: [{ role: "user", parts: [{ text: prompt }] }],
+                    generationConfig: { responseMimeType: "application/json" }
+                };
+                const result = await callGemini(payload);
+                if (result && result.candidates) {
+                    const { sentiment, score } = JSON.parse(result.candidates[0].content.parts[0].text);
+                    sentimentResult.textContent = sentiment;
+                    sentimentScore.textContent = `Confidence: ${(score * 100).toFixed(1)}%`;
+                    if (sentiment === 'Positive') sentimentResult.style.color = '#22c55e';
+                    else if (sentiment === 'Negative') sentimentResult.style.color = '#ef4444';
+                    else sentimentResult.style.color = '#a1a1aa';
+                    sentimentOutput.classList.remove('hidden');
+                }
+            });
+
+            // --- Email Writer Functionality ---
+            emailGenerateBtn.addEventListener('click', async () => {
+                const recipient = emailRecipient.value;
+                const tone = emailTone.value;
+                const objective = emailPrompt.value.trim();
+                if (!objective) return;
+                emailOutput.innerHTML = '<div class="spinner mx-auto"></div>';
+                const prompt = `Draft a ${tone} email to ${recipient || 'recipient'} with the following objective: ${objective}. Structure it with a subject line and body.`;
+                const result = await callGemini({ contents: [{ role: "user", parts: [{ text: prompt }] }] });
+                if (result && result.candidates) {
+                    let html = result.candidates[0].content.parts[0].text
+                        .replace(/Subject: (.*)/, '<h3 class="text-lg font-bold mb-2">Subject: $1</h3>')
+                        .replace(/\n/g, '<br>');
+                    emailOutput.innerHTML = html;
+                } else {
+                    emailOutput.textContent = 'Could not draft the email.';
+                }
+            });
+
+            // --- Settings Functionality ---
+            typingToggle.addEventListener('change', (e) => { enableTypingEffect = e.target.checked; saveSettings(); });
+            personaApplyBtn.addEventListener('click', () => {
+                currentPersona = personaSelect.value;
+                saveSettings();
+                initializeChat(true);
+                switchTab('chat');
+            });
+            clearHistoryBtn.addEventListener('click', () => {
+                if (confirm('Are you sure you want to clear the chat history?')) {
+                    localStorage.removeItem('aronChatHistory');
+                    initializeChat(true);
+                }
+            });
+            exportChatBtn.addEventListener('click', () => {
+                const historyText = chatHistory.map(msg => `${msg.role.toUpperCase()}:\n${msg.parts[0].text}`).join('\n\n---\n\n');
+                const blob = new Blob([historyText], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'aron-chat-history.txt';
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+            themePicker.addEventListener('click', (e) => {
+                if (e.target.classList.contains('theme-btn')) {
+                    const color = e.target.dataset.color;
+                    applyTheme(color);
+                    saveSettings();
+                }
+            });
+            fontSizeSlider.addEventListener('input', (e) => {
+                const size = e.target.value;
+                fontSizeValue.textContent = `${size}px`;
+                document.documentElement.style.setProperty('--font-size-base', `${size}px`);
+                saveSettings();
+            });
+            glassBlurSlider.addEventListener('input', (e) => {
+                const blur = e.target.value;
+                glassBlurValue.textContent = `${blur}px`;
+                document.documentElement.style.setProperty('--glass-blur', `${blur}px`);
+                saveSettings();
+            });
+            
+            function applyTheme(color) {
+                document.documentElement.style.setProperty('--theme-color', color);
+                document.documentElement.style.setProperty('--theme-color-translucent', color + '33');
+                document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('border-white'));
+                document.querySelector(`.theme-btn[data-color="${color}"]`).classList.add('border-white');
+            }
+
+            function saveSettings() {
+                const settings = {
+                    typingEffect: enableTypingEffect,
+                    theme: document.documentElement.style.getPropertyValue('--theme-color'),
+                    persona: personaSelect.value,
+                    fontSize: fontSizeSlider.value,
+                    glassBlur: glassBlurSlider.value,
+                };
+                localStorage.setItem('aronSettings', JSON.stringify(settings));
+            }
+
+            function loadSettings() {
+                const savedSettings = localStorage.getItem('aronSettings');
+                if (savedSettings) {
+                    const settings = JSON.parse(savedSettings);
+                    enableTypingEffect = settings.typingEffect;
+                    typingToggle.checked = enableTypingEffect;
+                    applyTheme(settings.theme || '#4f46e5');
+                    personaSelect.value = settings.persona || 'professional';
+                    currentPersona = settings.persona || 'professional';
+                    fontSizeSlider.value = settings.fontSize || 16;
+                    fontSizeValue.textContent = `${settings.fontSize || 16}px`;
+                    document.documentElement.style.setProperty('--font-size-base', `${settings.fontSize || 16}px`);
+                    glassBlurSlider.value = settings.glassBlur || 12;
+                    glassBlurValue.textContent = `${settings.glassBlur || 12}px`;
+                    document.documentElement.style.setProperty('--glass-blur', `${settings.glassBlur || 12}px`);
+                }
+            }
+
+            exportSettingsBtn.addEventListener('click', () => {
+                const settingsJson = localStorage.getItem('aronSettings');
+                const blob = new Blob([settingsJson], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'aron-settings.json';
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+            importSettingsBtn.addEventListener('click', () => importSettingsInput.click());
+            importSettingsInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        localStorage.setItem('aronSettings', event.target.result);
+                        loadSettings();
+                        initializeChat(true);
+                    };
+                    reader.readAsText(file);
+                }
+            });
+            resetAllBtn.addEventListener('click', () => {
+                if (confirm('Are you sure you want to reset all settings and clear chat history? This cannot be undone.')) {
+                    localStorage.removeItem('aronSettings');
+                    localStorage.removeItem('aronChatHistory');
+                    window.location.reload();
+                }
+            });
+
+            // --- Initial Setup ---
+            function initializeChat(forceReset = false) {
+                const savedHistory = localStorage.getItem('aronChatHistory');
+                chatContainer.innerHTML = '';
+                smartReplyContainer.innerHTML = '';
+                if (savedHistory && !forceReset) {
+                    chatHistory = JSON.parse(savedHistory);
+                    chatHistory.slice(2).forEach(msg => { // Skip system prompts
+                        appendMessage(msg.role === 'user' ? 'user' : 'aron', msg.parts[0].text, false);
+                    });
+                    if (chatHistory.length > 2) {
+                        generateSmartReplies(chatHistory[chatHistory.length - 1].parts[0].text);
+                    } else {
+                         appendMessage('aron', "Welcome back to Aron. How may I help you today?", true);
+                    }
+                } else {
+                    chatHistory = [
+                        { role: "user", parts: [{ text: personaPrompts[currentPersona] }] },
+                        { role: "model", parts: [{ text: "Welcome to Aron. I am your AI assistant. How may I help you today?" }] }
+                    ];
+                    localStorage.setItem('aronChatHistory', JSON.stringify(chatHistory));
+                    appendMessage('aron', "Welcome to Aron. I am your AI assistant. How may I help you today?", true);
+                }
+            }
+
+            function initialize() {
+                loadSettings();
+                switchTab('chat');
+                initializeChat();
+            }
+
+            initialize();
+        });
+    </script>
+</body>
+</html>
