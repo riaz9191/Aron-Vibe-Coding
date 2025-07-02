@@ -12,10 +12,6 @@
             font-family: 'Inter', sans-serif;
             background: #0a0a0a;
         }
-        .sidebar {
-            background-color: #111111;
-            border-right: 1px solid #222;
-        }
         .main-content {
             background: linear-gradient(135deg, #1a1a1a, #0a0a0a, #1a1a1a);
             background-size: 400% 400%;
@@ -26,10 +22,16 @@
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
-        .chat-container::-webkit-scrollbar, .code-output::-webkit-scrollbar {
+        .glass-panel {
+            background: rgba(20, 20, 20, 0.5);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .chat-container::-webkit-scrollbar, .code-output::-webkit-scrollbar, .scrollable-content::-webkit-scrollbar {
             width: 6px;
         }
-        .chat-container::-webkit-scrollbar-thumb, .code-output::-webkit-scrollbar-thumb {
+        .chat-container::-webkit-scrollbar-thumb, .code-output::-webkit-scrollbar-thumb, .scrollable-content::-webkit-scrollbar-thumb {
             background-color: #4f46e5;
             border-radius: 20px;
         }
@@ -41,9 +43,7 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
         .glow-effect {
             box-shadow: 0 0 15px rgba(79, 70, 229, 0.5), 0 0 5px rgba(79, 70, 229, 0.8);
         }
@@ -70,40 +70,52 @@
             background-color: #0d1117;
             font-family: 'Courier New', Courier, monospace;
         }
+        .nav-link.active {
+            background-color: #4f46e533;
+            border: 1px solid #4f46e5;
+            color: white;
+        }
+        .nav-link.active .active-indicator { opacity: 1; }
     </style>
 </head>
 <body class="bg-gray-900 text-white">
 
     <div class="flex h-screen">
         <!-- Sidebar -->
-        <aside class="w-64 sidebar p-4 flex flex-col shrink-0 justify-between">
+        <aside class="w-64 glass-panel p-4 flex flex-col shrink-0 justify-between">
             <div>
                 <h1 class="text-3xl font-bold text-indigo-400 mb-8 tracking-wider">ARON</h1>
-                <nav class="flex flex-col space-y-2">
-                    <a href="#" id="chat-tab" class="flex items-center space-x-3 text-white py-3 px-4 rounded-lg transition-all duration-300 bg-indigo-600/30 border border-indigo-500">
+                <nav class="flex flex-col space-y-1">
+                    <a href="#" id="chat-tab" class="nav-link flex items-center space-x-3 py-3 px-4 rounded-lg transition-all duration-300">
+                        <span class="active-indicator opacity-0 w-1 h-1 bg-indigo-400 rounded-full glow-effect"></span>
                         <span>💬</span>
                         <span>Chat</span>
                     </a>
-                    <a href="#" id="easel-tab" class="flex items-center space-x-3 hover:bg-gray-700/50 py-3 px-4 rounded-lg transition-all duration-300">
+                    <a href="#" id="easel-tab" class="nav-link flex items-center space-x-3 py-3 px-4 rounded-lg transition-all duration-300">
+                        <span class="active-indicator opacity-0 w-1 h-1 bg-indigo-400 rounded-full glow-effect"></span>
                         <span>🎨</span>
                         <span>Aron's Easel</span>
                     </a>
-                    <a href="#" id="analyst-tab" class="flex items-center space-x-3 hover:bg-gray-700/50 py-3 px-4 rounded-lg transition-all duration-300">
-                        <span>📊</span>
-                        <span>Aron's Analyst</span>
+                     <a href="#" id="docu-synth-tab" class="nav-link flex items-center space-x-3 py-3 px-4 rounded-lg transition-all duration-300">
+                        <span class="active-indicator opacity-0 w-1 h-1 bg-indigo-400 rounded-full glow-effect"></span>
+                        <span>📄</span>
+                        <span>Docu-Synth</span>
                     </a>
-                    <a href="#" id="code-tab" class="flex items-center space-x-3 hover:bg-gray-700/50 py-3 px-4 rounded-lg transition-all duration-300">
+                    <a href="#" id="translator-tab" class="nav-link flex items-center space-x-3 py-3 px-4 rounded-lg transition-all duration-300">
+                        <span class="active-indicator opacity-0 w-1 h-1 bg-indigo-400 rounded-full glow-effect"></span>
+                        <span>🌐</span>
+                        <span>Translator</span>
+                    </a>
+                    <a href="#" id="code-tab" class="nav-link flex items-center space-x-3 py-3 px-4 rounded-lg transition-all duration-300">
+                         <span class="active-indicator opacity-0 w-1 h-1 bg-indigo-400 rounded-full glow-effect"></span>
                         <span>💻</span>
                         <span>Code Companion</span>
-                    </a>
-                    <a href="#" id="audio-tab" class="flex items-center space-x-3 hover:bg-gray-700/50 py-3 px-4 rounded-lg transition-all duration-300">
-                        <span>🎤</span>
-                        <span>Audio Scribe</span>
                     </a>
                 </nav>
             </div>
             <nav>
-                 <a href="#" id="settings-tab" class="flex items-center space-x-3 hover:bg-gray-700/50 py-3 px-4 rounded-lg transition-all duration-300">
+                 <a href="#" id="settings-tab" class="nav-link flex items-center space-x-3 py-3 px-4 rounded-lg transition-all duration-300">
+                    <span class="active-indicator opacity-0 w-1 h-1 bg-indigo-400 rounded-full glow-effect"></span>
                     <span>⚙️</span>
                     <span>Settings</span>
                 </a>
@@ -113,8 +125,9 @@
         <!-- Main Content -->
         <main class="flex-1 flex flex-col min-w-0 main-content">
             <!-- Chat Interface -->
-            <div id="chat-interface" class="flex flex-col h-full">
+            <div id="chat-interface" class="interface-panel flex flex-col h-full">
                 <div class="chat-container flex-1 p-6 overflow-y-auto"></div>
+                 <div id="smart-reply-container" class="px-6 pb-2 flex items-center gap-2"></div>
                 <div class="p-4 bg-gray-900/50 border-t border-gray-700/50">
                     <div class="relative">
                         <input type="text" id="chat-input" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-300" placeholder="Ask Aron anything...">
@@ -127,8 +140,8 @@
             </div>
 
             <!-- Aron's Easel Interface -->
-            <div id="easel-interface" class="hidden h-full flex flex-col items-center justify-center p-8">
-                <div class="text-center w-full max-w-2xl">
+            <div id="easel-interface" class="interface-panel hidden h-full flex flex-col items-center justify-center p-8">
+                 <div class="text-center w-full max-w-2xl glass-panel p-8 rounded-2xl">
                     <h2 class="text-4xl font-bold mb-2 text-indigo-400">Aron's Easel</h2>
                     <p class="text-gray-400 mb-6">✨ Describe an image, and watch AI bring it to life.</p>
                     <div class="flex items-center space-x-2 mb-4">
@@ -147,30 +160,56 @@
                 </div>
             </div>
 
-            <!-- Aron's Analyst Interface -->
-            <div id="analyst-interface" class="hidden h-full flex flex-col items-center justify-center p-8">
-                 <div class="text-center w-full max-w-4xl">
-                    <h2 class="text-4xl font-bold mb-2 text-indigo-400">Aron's Analyst</h2>
-                    <p class="text-gray-400 mb-6">✨ Upload a CSV, and let AI reveal insights and visualize your data.</p>
-                    <input type="file" id="csv-upload" class="hidden" accept=".csv">
-                    <button id="csv-upload-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg mb-6 btn-primary">Upload CSV</button>
-                    <div id="analyst-output" class="hidden w-full grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div class="bg-gray-800/50 border border-gray-700 p-6 rounded-lg">
-                            <h3 class="font-bold text-xl mb-3 text-indigo-400">Analysis</h3>
-                            <p id="analyst-text" class="text-gray-300 text-left"></p>
+            <!-- Docu-Synth Interface -->
+            <div id="docu-synth-interface" class="interface-panel hidden h-full flex flex-col items-center justify-center p-8">
+                 <div class="w-full max-w-4xl glass-panel p-8 rounded-2xl">
+                    <h2 class="text-4xl font-bold mb-2 text-center text-indigo-400">Docu-Synth</h2>
+                    <p class="text-gray-400 mb-6 text-center">✨ Upload a text file and get a concise AI-powered summary.</p>
+                    <input type="file" id="doc-upload" class="hidden" accept=".txt">
+                    <button id="doc-upload-btn" class="block mx-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg mb-6 btn-primary">Upload .txt File</button>
+                    <div id="doc-output" class="hidden w-full bg-gray-800/50 border border-gray-700 p-6 rounded-lg min-h-[200px] scrollable-content overflow-y-auto">
+                        <h3 class="font-bold text-xl mb-3 text-indigo-400">Summary</h3>
+                        <p id="doc-summary" class="text-gray-300 text-left"></p>
+                    </div>
+                    <div id="doc-spinner" class="spinner hidden mx-auto"></div>
+                 </div>
+            </div>
+
+            <!-- Global Translator Interface -->
+            <div id="translator-interface" class="interface-panel hidden h-full flex flex-col items-center justify-center p-8">
+                 <div class="w-full max-w-4xl glass-panel p-8 rounded-2xl">
+                    <h2 class="text-4xl font-bold mb-2 text-center text-indigo-400">Global Translator</h2>
+                    <p class="text-gray-400 mb-6 text-center">✨ Translate text into any language with AI precision.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block mb-2 text-gray-400">Original Text</label>
+                            <textarea id="translate-input" class="w-full h-48 bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
                         </div>
-                        <div class="bg-gray-800/50 border border-gray-700 p-6 rounded-lg">
-                             <h3 class="font-bold text-xl mb-3 text-indigo-400">Visualization</h3>
-                            <canvas id="analyst-chart"></canvas>
+                        <div>
+                            <label class="block mb-2 text-gray-400">Translated Text</label>
+                            <textarea id="translate-output" class="w-full h-48 bg-gray-800 border border-gray-700 rounded-lg p-3 text-white" readonly></textarea>
                         </div>
                     </div>
-                    <div id="analyst-spinner" class="spinner hidden"></div>
+                    <div class="flex items-center justify-center space-x-4 mt-4">
+                         <select id="translate-language" class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option>Spanish</option>
+                            <option>French</option>
+                            <option>German</option>
+                            <option>Japanese</option>
+                            <option>Chinese</option>
+                            <option>Russian</option>
+                        </select>
+                        <button id="translate-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-5 rounded-lg flex items-center justify-center w-36 btn-primary">
+                             <span id="translate-text">Translate</span>
+                             <div id="translate-spinner" class="spinner hidden"></div>
+                        </button>
+                    </div>
                  </div>
             </div>
             
             <!-- Code Companion Interface -->
-            <div id="code-interface" class="hidden h-full flex flex-col p-8">
-                <div class="w-full max-w-4xl mx-auto">
+            <div id="code-interface" class="interface-panel hidden h-full flex flex-col p-8">
+                <div class="w-full max-w-4xl mx-auto glass-panel p-8 rounded-2xl">
                     <h2 class="text-4xl font-bold mb-2 text-indigo-400">Code Companion</h2>
                     <p class="text-gray-400 mb-6">✨ Your AI pair programmer. Describe what you want to build.</p>
                     <textarea id="code-prompt" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="3" placeholder="e.g., A python function that returns the factorial of a number"></textarea>
@@ -194,30 +233,27 @@
                 </div>
             </div>
 
-            <!-- Audio Scribe Interface -->
-            <div id="audio-interface" class="hidden h-full flex flex-col items-center justify-center p-8">
-                 <div class="text-center w-full max-w-2xl">
-                    <h2 class="text-4xl font-bold mb-2 text-indigo-400">Audio Scribe</h2>
-                    <p class="text-gray-400 mb-6">✨ Upload an audio file to be transcribed. (UI Mockup)</p>
-                    <input type="file" id="audio-upload" class="hidden" accept="audio/*">
-                    <button id="audio-upload-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg mb-6 btn-primary">Upload Audio File</button>
-                    <div id="audio-output" class="hidden w-full bg-gray-800/50 border border-gray-700 p-6 rounded-lg">
-                        <h3 class="font-bold text-xl mb-3 text-indigo-400">Transcription</h3>
-                        <p id="audio-text" class="text-gray-300 text-left"></p>
-                    </div>
-                    <div id="audio-spinner" class="spinner hidden"></div>
-                 </div>
-            </div>
-
             <!-- Settings Interface -->
-            <div id="settings-interface" class="hidden h-full flex flex-col items-center justify-center p-8">
-                 <div class="w-full max-w-2xl">
+            <div id="settings-interface" class="interface-panel hidden h-full flex flex-col p-8">
+                 <div class="w-full max-w-2xl mx-auto glass-panel p-8 rounded-2xl">
                     <h2 class="text-4xl font-bold mb-6 text-indigo-400">Settings</h2>
-                    <div class="bg-gray-800/50 border border-gray-700 p-6 rounded-lg flex justify-between items-center">
-                        <label for="typing-toggle" class="text-lg">Enable AI Typing Effect</label>
-                        <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-                            <input type="checkbox" id="typing-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" checked/>
-                            <label for="typing-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-600 cursor-pointer"></label>
+                    <div class="space-y-6">
+                        <div class="flex justify-between items-center">
+                            <label for="typing-toggle" class="text-lg">Enable AI Typing Effect</label>
+                            <input type="checkbox" id="typing-toggle" class="form-checkbox h-5 w-5 text-indigo-600 bg-gray-700 border-gray-600 rounded focus:ring-indigo-500" checked/>
+                        </div>
+                        <div class="flex flex-col space-y-2">
+                            <label for="persona-select" class="text-lg">Aron's Persona</label>
+                            <select id="persona-select" class="bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="professional">Professional Assistant</option>
+                                <option value="creative">Creative Partner</option>
+                                <option value="humorous">Humorous Sidekick</option>
+                                <option value="socratic">Socratic Tutor</option>
+                            </select>
+                        </div>
+                        <div class="flex space-x-4">
+                            <button id="persona-apply-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg btn-primary">Apply & Reset Chat</button>
+                            <button id="clear-history-btn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg btn-primary">Clear Chat History</button>
                         </div>
                     </div>
                  </div>
@@ -231,39 +267,44 @@
             const allTabs = {
                 chat: { tab: document.getElementById('chat-tab'), interface: document.getElementById('chat-interface') },
                 easel: { tab: document.getElementById('easel-tab'), interface: document.getElementById('easel-interface') },
-                analyst: { tab: document.getElementById('analyst-tab'), interface: document.getElementById('analyst-interface') },
+                docuSynth: { tab: document.getElementById('docu-synth-tab'), interface: document.getElementById('docu-synth-interface') },
+                translator: { tab: document.getElementById('translator-tab'), interface: document.getElementById('translator-interface') },
                 code: { tab: document.getElementById('code-tab'), interface: document.getElementById('code-interface') },
-                audio: { tab: document.getElementById('audio-tab'), interface: document.getElementById('audio-interface') },
                 settings: { tab: document.getElementById('settings-tab'), interface: document.getElementById('settings-interface') },
             };
 
             // UI Elements
-            const chatInput = document.getElementById('chat-input'), sendBtn = document.getElementById('send-btn'), sendText = document.getElementById('send-text'), sendSpinner = document.getElementById('send-spinner'), chatContainer = document.querySelector('.chat-container');
+            const chatInput = document.getElementById('chat-input'), sendBtn = document.getElementById('send-btn'), sendText = document.getElementById('send-text'), sendSpinner = document.getElementById('send-spinner'), chatContainer = document.querySelector('.chat-container'), smartReplyContainer = document.getElementById('smart-reply-container');
             const easelPrompt = document.getElementById('easel-prompt'), easelGenerateBtn = document.getElementById('easel-generate-btn'), easelText = document.getElementById('easel-text'), easelSpinner = document.getElementById('easel-spinner'), easelOutput = document.getElementById('easel-output'), easelPlaceholder = document.getElementById('easel-placeholder'), easelImage = document.getElementById('easel-image'), easelOutputSpinner = document.getElementById('easel-output-spinner'), easelDownloadBtn = document.getElementById('easel-download-btn');
-            const csvUploadBtn = document.getElementById('csv-upload-btn'), csvUpload = document.getElementById('csv-upload'), analystOutput = document.getElementById('analyst-output'), analystText = document.getElementById('analyst-text'), analystChartEl = document.getElementById('analyst-chart'), analystSpinner = document.getElementById('analyst-spinner');
+            const docUploadBtn = document.getElementById('doc-upload-btn'), docUpload = document.getElementById('doc-upload'), docOutput = document.getElementById('doc-output'), docSummary = document.getElementById('doc-summary'), docSpinner = document.getElementById('doc-spinner');
+            const translateInput = document.getElementById('translate-input'), translateOutput = document.getElementById('translate-output'), translateLanguage = document.getElementById('translate-language'), translateBtn = document.getElementById('translate-btn'), translateText = document.getElementById('translate-text'), translateSpinner = document.getElementById('translate-spinner');
             const codePrompt = document.getElementById('code-prompt'), codeLanguage = document.getElementById('code-language'), codeGenerateBtn = document.getElementById('code-generate-btn'), codeText = document.getElementById('code-text'), codeSpinner = document.getElementById('code-spinner'), codeOutput = document.getElementById('code-output'), codeCopyBtn = document.getElementById('code-copy-btn');
-            const audioUploadBtn = document.getElementById('audio-upload-btn'), audioUpload = document.getElementById('audio-upload'), audioOutput = document.getElementById('audio-output'), audioText = document.getElementById('audio-text'), audioSpinner = document.getElementById('audio-spinner');
-            const typingToggle = document.getElementById('typing-toggle');
+            const typingToggle = document.getElementById('typing-toggle'), personaSelect = document.getElementById('persona-select'), personaApplyBtn = document.getElementById('persona-apply-btn'), clearHistoryBtn = document.getElementById('clear-history-btn');
 
-            let chartInstance = null, chatHistory = [], enableTypingEffect = true;
+            let chatHistory = [], enableTypingEffect = true;
+            let currentPersona = "professional";
+
+            const personaPrompts = {
+                professional: "You are Aron, a helpful and friendly AI assistant. Keep your answers concise and professional.",
+                creative: "You are Aron, an imaginative and creative AI partner. Your answers should be inspiring and think outside the box.",
+                humorous: "You are Aron, a witty and humorous AI sidekick. Your answers should be clever and funny, but still helpful.",
+                socratic: "You are Aron, a tutor who uses the Socratic method. Instead of giving direct answers, ask insightful questions to help the user learn and discover the answer themselves."
+            };
 
             // --- Tab Navigation ---
             function switchTab(tabKey) {
                 Object.values(allTabs).forEach(({ tab, interface: intf }) => {
-                    tab.classList.remove('bg-indigo-600/30', 'border-indigo-500', 'text-white');
-                    tab.classList.add('hover:bg-gray-700/50');
+                    tab.classList.remove('active');
                     intf.classList.add('hidden');
                 });
                 const active = allTabs[tabKey];
-                active.tab.classList.add('bg-indigo-600/30', 'border-indigo-500', 'text-white');
-                active.tab.classList.remove('hover:bg-gray-700/50');
+                active.tab.classList.add('active');
                 active.interface.classList.remove('hidden');
             }
             Object.keys(allTabs).forEach(key => allTabs[key].tab.addEventListener('click', (e) => { e.preventDefault(); switchTab(key); }));
             
             // --- Gemini API Calls ---
             const GEMINI_API_KEY = ""; // Provided by environment
-
             async function callGemini(payload, model = 'gemini-2.0-flash') {
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
                 try {
@@ -332,23 +373,26 @@
                     messageElement.innerHTML = `<div class="flex justify-end"><div class="bg-indigo-600 text-white rounded-lg p-3 max-w-lg">${message.replace(/\n/g, '<br>')}</div></div>`;
                 } else {
                     messageElement.className = 'flex';
-                    messageBody.className = 'bg-gray-700/80 text-white rounded-lg p-3 max-w-lg';
+                    messageBody.className = 'glass-panel text-white rounded-lg p-3 max-w-lg';
                     messageElement.appendChild(messageBody);
                     if (isTyping) {
-                        typeWriter(messageBody, message);
+                        typeWriter(messageBody, message, () => generateSmartReplies(message));
                     } else {
                         messageBody.innerHTML = message.replace(/\n/g, '<br>');
+                        generateSmartReplies(message);
                     }
                 }
                 chatContainer.appendChild(messageElement);
                 chatContainer.scrollTop = chatContainer.scrollHeight;
+                localStorage.setItem('aronChatHistory', JSON.stringify(chatHistory));
             }
 
-            async function handleSendMessage() {
-                const prompt = chatInput.value.trim();
+            async function handleSendMessage(promptOverride = null) {
+                const prompt = promptOverride || chatInput.value.trim();
                 if (!prompt) return;
                 appendMessage('user', prompt);
                 chatInput.value = '';
+                smartReplyContainer.innerHTML = '';
 
                 sendSpinner.classList.remove('hidden');
                 sendText.classList.add('hidden');
@@ -369,8 +413,40 @@
                     appendMessage('aron', "Sorry, I encountered an error. Please try again.", false);
                 }
             }
-            sendBtn.addEventListener('click', handleSendMessage);
+            sendBtn.addEventListener('click', () => handleSendMessage());
             chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleSendMessage(); });
+
+            async function generateSmartReplies(lastMessage) {
+                smartReplyContainer.innerHTML = '';
+                const prompt = `Based on the last message "${lastMessage}", generate 3 short, relevant, one-click replies.`;
+                const payload = {
+                    contents: [{ role: "user", parts: [{ text: prompt }] }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "OBJECT",
+                            properties: {
+                                "replies": {
+                                    "type": "ARRAY",
+                                    "items": { "type": "STRING" }
+                                }
+                            },
+                            required: ["replies"]
+                        }
+                    }
+                };
+                const result = await callGemini(payload);
+                if (result && result.candidates) {
+                    const { replies } = JSON.parse(result.candidates[0].content.parts[0].text);
+                    replies.slice(0, 3).forEach(reply => {
+                        const button = document.createElement('button');
+                        button.className = 'glass-panel text-sm py-1 px-3 rounded-full hover:bg-indigo-600/50 transition-colors';
+                        button.textContent = reply;
+                        button.onclick = () => handleSendMessage(reply);
+                        smartReplyContainer.appendChild(button);
+                    });
+                }
+            }
 
             // --- Easel Functionality ---
             async function handleImageGeneration() {
@@ -412,89 +488,56 @@
                 link.click();
             });
 
-            // --- Analyst Functionality ---
-            csvUploadBtn.addEventListener('click', () => csvUpload.click());
-            csvUpload.addEventListener('change', async (event) => {
+            // --- Docu-Synth Functionality ---
+            docUploadBtn.addEventListener('click', () => docUpload.click());
+            docUpload.addEventListener('change', async (event) => {
                 const file = event.target.files[0];
-                if (!file) return;
-
-                analystSpinner.classList.remove('hidden');
-                analystOutput.classList.add('hidden');
-
-                const csvText = await file.text();
-                const prompt = `Analyze the following CSV data. Provide a brief, insightful summary (max 3 sentences). Identify the best chart type (bar, line, or pie) to visualize a key relationship in the data. Specify the column to be used for the labels and the column for the data values. \n\nCSV Data:\n${csvText}`;
-                const payload = {
-                    contents: [{ role: "user", parts: [{ text: prompt }] }],
-                    generationConfig: {
-                        responseMimeType: "application/json",
-                        responseSchema: {
-                            type: "OBJECT",
-                            properties: {
-                                "analysisText": { "type": "STRING" },
-                                "chartType": { "type": "STRING", "enum": ["bar", "line", "pie"] },
-                                "labelsColumn": { "type": "STRING" },
-                                "dataColumn": { "type": "STRING" }
-                            },
-                            required: ["analysisText", "chartType", "labelsColumn", "dataColumn"]
-                        }
-                    }
-                };
-                const result = await callGemini(payload);
-
-                analystSpinner.classList.add('hidden');
-
+                if (!file || file.type !== 'text/plain') {
+                    alert('Please upload a .txt file.');
+                    return;
+                }
+                docSpinner.classList.remove('hidden');
+                docOutput.classList.add('hidden');
+                const text = await file.text();
+                const prompt = `Summarize the following document concisely:\n\n${text}`;
+                const result = await callGemini({ contents: [{ role: "user", parts: [{ text: prompt }] }] });
+                docSpinner.classList.add('hidden');
+                docOutput.classList.remove('hidden');
                 if (result && result.candidates) {
-                    const analysis = JSON.parse(result.candidates[0].content.parts[0].text);
-                    const { header, data } = parseCSV(csvText);
-                    displayAnalysis(analysis, data);
+                    typeWriter(docSummary, result.candidates[0].content.parts[0].text);
                 } else {
-                    analystText.textContent = "Could not analyze the data.";
-                    analystOutput.classList.remove('hidden');
+                    docSummary.textContent = 'Could not summarize the document.';
                 }
             });
 
-            function parseCSV(text) {
-                const rows = text.trim().split('\n');
-                const header = rows.shift().split(',').map(h => h.trim());
-                const data = rows.map(row => {
-                    const values = row.split(',');
-                    return header.reduce((obj, h, i) => {
-                        obj[h] = values[i] ? values[i].trim() : '';
-                        return obj;
-                    }, {});
-                });
-                return { header, data };
-            }
+            // --- Translator Functionality ---
+            async function handleTranslation() {
+                const text = translateInput.value.trim();
+                const language = translateLanguage.value;
+                if (!text) return;
 
-            function displayAnalysis(analysis, data) {
-                analystText.textContent = analysis.analysisText;
-                const labels = data.map(row => row[analysis.labelsColumn]);
-                const values = data.map(row => parseFloat(row[analysis.dataColumn]));
+                translateSpinner.classList.remove('hidden');
+                translateText.classList.add('hidden');
+                translateBtn.disabled = true;
 
-                if (chartInstance) chartInstance.destroy();
-                Chart.defaults.color = '#ccc';
-                Chart.defaults.borderColor = '#444';
-                chartInstance = new Chart(analystChartEl, {
-                    type: analysis.chartType,
-                    data: {
-                        labels,
-                        datasets: [{
-                            label: `${analysis.dataColumn} by ${analysis.labelsColumn}`,
-                            data: values,
-                            backgroundColor: 'rgba(79, 70, 229, 0.6)',
-                            borderColor: 'rgba(79, 70, 229, 1)',
-                            borderWidth: 1,
-                            hoverBackgroundColor: 'rgba(79, 70, 229, 0.8)'
-                        }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: true, scales: { y: { beginAtZero: true, grid: { color: '#444' } }, x: { grid: { color: '#444' } } }, plugins: { legend: { labels: { color: '#fff' } } } }
-                });
-                analystOutput.classList.remove('hidden');
+                const prompt = `Translate the following text to ${language}: "${text}"`;
+                const result = await callGemini({ contents: [{ role: "user", parts: [{ text: prompt }] }] });
+
+                translateSpinner.classList.add('hidden');
+                translateText.classList.remove('hidden');
+                translateBtn.disabled = false;
+
+                if (result && result.candidates) {
+                    translateOutput.value = result.candidates[0].content.parts[0].text;
+                } else {
+                    translateOutput.value = 'Translation failed.';
+                }
             }
+            translateBtn.addEventListener('click', handleTranslation);
 
             // --- Code Companion Functionality ---
             async function handleCodeGeneration() {
-                const prompt = codePrompt.value.trim();
+                 const prompt = codePrompt.value.trim();
                 const language = codeLanguage.value;
                 if (!prompt) return;
 
@@ -513,7 +556,6 @@
 
                 if (result && result.candidates) {
                     let code = result.candidates[0].content.parts[0].text;
-                    // Clean up markdown fences
                     code = code.replace(/^```(?:\w+\n)?/, '').replace(/```$/, '');
                     codeOutput.textContent = code;
                     codeCopyBtn.classList.remove('hidden');
@@ -529,31 +571,44 @@
                 });
             });
 
-            // --- Audio Scribe Functionality (Mockup) ---
-            audioUploadBtn.addEventListener('click', () => audioUpload.click());
-            audioUpload.addEventListener('change', (event) => {
-                if (!event.target.files[0]) return;
-                audioSpinner.classList.remove('hidden');
-                audioOutput.classList.add('hidden');
-                setTimeout(() => {
-                    audioSpinner.classList.add('hidden');
-                    audioText.textContent = "This is a simulated transcription. In a real application, the audio file would be processed by a speech-to-text AI model to generate an accurate transcript here.";
-                    audioOutput.classList.remove('hidden');
-                }, 2000);
-            });
-            
             // --- Settings Functionality ---
-            typingToggle.addEventListener('change', (e) => {
-                enableTypingEffect = e.target.checked;
+            typingToggle.addEventListener('change', (e) => { enableTypingEffect = e.target.checked; });
+            personaApplyBtn.addEventListener('click', () => {
+                currentPersona = personaSelect.value;
+                initializeChat(true);
+                switchTab('chat');
+            });
+            clearHistoryBtn.addEventListener('click', () => {
+                if (confirm('Are you sure you want to clear the chat history?')) {
+                    localStorage.removeItem('aronChatHistory');
+                    initializeChat(true);
+                }
             });
 
             // --- Initial Setup ---
+            function initializeChat(forceReset = false) {
+                const savedHistory = localStorage.getItem('aronChatHistory');
+                chatContainer.innerHTML = '';
+                smartReplyContainer.innerHTML = '';
+
+                if (savedHistory && !forceReset) {
+                    chatHistory = JSON.parse(savedHistory);
+                    chatHistory.forEach(msg => {
+                        appendMessage(msg.role === 'user' ? 'user' : 'aron', msg.parts[0].text, false);
+                    });
+                } else {
+                    chatHistory = [
+                        { role: "user", parts: [{ text: personaPrompts[currentPersona] }] },
+                        { role: "model", parts: [{ text: "Welcome to Aron. I am your AI assistant. How may I help you today?" }] }
+                    ];
+                    localStorage.setItem('aronChatHistory', JSON.stringify(chatHistory));
+                    appendMessage('aron', "Welcome to Aron. I am your AI assistant. How may I help you today?", true);
+                }
+            }
+
             function initialize() {
-                chatHistory.push(
-                    { role: "user", parts: [{ text: "You are Aron, a helpful and friendly AI assistant. Keep your answers concise and professional." }] },
-                    { role: "model", parts: [{ text: "Welcome to Aron. I am your AI assistant. How may I help you today?" }] }
-                );
-                appendMessage('aron', "Welcome to Aron. I am your AI assistant. How may I help you today?", true);
+                switchTab('chat');
+                initializeChat();
             }
 
             initialize();
