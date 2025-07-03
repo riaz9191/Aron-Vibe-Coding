@@ -351,7 +351,7 @@
                 }
             }
             Object.keys(allTabs).forEach(key => allTabs[key].tab.addEventListener('click', (e) => { e.preventDefault(); switchTab(key); }));
-            
+            // Initialize with chat tab
             // --- Gemini API Calls ---
             const GEMINI_API_KEY = "AIzaSyC_HJOIkEEcifalbQM3eNOCMxls"; // Provided by environment
             async function callGemini(payload, model = 'gemini-2.0-flash') {
