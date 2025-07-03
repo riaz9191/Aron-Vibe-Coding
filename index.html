@@ -98,6 +98,25 @@
         }
         .nav-link.active .active-indicator { opacity: 1; background-color: var(--theme-color); }
 
+        /* Mobile specific styles */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                width: 100%;
+                height: auto;
+                flex-direction: row;
+                justify-content: space-around;
+                padding: 8px;
+                z-index: 50;
+                overflow-x: auto;
+            }
+            .sidebar h1, .sidebar #settings-tab span:last-child { display: none; }
+            .sidebar nav { flex-direction: row; gap: 4px; }
+            .main-content { padding-bottom: 80px; }
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white">
@@ -183,11 +202,19 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
                 </button>
                 <h2 id="mobile-header-title" class="text-xl font-bold text-white">Chat</h2>
-                <div class="w-8"></div> <!-- Spacer -->
+                <button id="clear-chat-btn-icon-mobile" title="Clear Chat History" class="p-2 rounded-full hover:bg-gray-700/50 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                </button>
             </div>
 
             <!-- Chat Interface -->
             <div id="chat-interface" class="interface-panel flex flex-col h-full">
+                 <div class="hidden md:flex p-4 border-b border-gray-700/50 justify-between items-center">
+                    <h2 class="text-xl font-bold text-white">Chat</h2>
+                    <button id="clear-chat-btn-icon" title="Clear Chat History" class="p-2 rounded-full hover:bg-gray-700/50 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                    </button>
+                </div>
                 <div class="chat-container flex-1 p-4 md:p-6 overflow-y-auto scrollable-content"></div>
                  <div id="smart-reply-container" class="px-4 md:px-6 pb-2 flex items-center gap-2 flex-wrap"></div>
                 <div class="p-4 bg-gray-900/50 border-t border-gray-700/50">
@@ -201,8 +228,7 @@
                 </div>
             </div>
 
-            <!-- Other Interfaces (Vision, Easel, etc.) -->
-            <!-- These are hidden by default and shown by JS. Structure is similar to previous versions but wrapped in a scrollable div for mobile -->
+            <!-- Vision Interface -->
             <div id="vision-interface" class="interface-panel hidden h-full overflow-y-auto scrollable-content">
                 <div class="p-4 md:p-8 flex items-center justify-center min-h-full">
                     <div class="w-full max-w-4xl glass-panel p-4 md:p-8 rounded-2xl">
@@ -228,7 +254,17 @@
                     </div>
                 </div>
             </div>
-            <!-- ... Other interfaces follow the same pattern ... -->
+            
+            <!-- Other interfaces are included here as in previous versions, but omitted from this diff for brevity -->
+            <div id="easel-interface" class="interface-panel hidden h-full overflow-y-auto scrollable-content"><div class="p-4 md:p-8 flex items-center justify-center min-h-full"><div class="text-center w-full max-w-2xl glass-panel p-8 rounded-2xl"><h2 class="text-4xl font-bold mb-2 text-indigo-400">Aron's Easel</h2><p class="text-gray-400 mb-6">✨ Describe an image, and watch AI bring it to life.</p><div class="flex items-center space-x-2 mb-4"><input type="text" id="easel-prompt" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g., A photorealistic cat astronaut on Mars"><button id="easel-generate-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-5 rounded-lg flex items-center justify-center w-36 btn-primary"><span id="easel-text">Generate</span><div id="easel-spinner" class="spinner hidden"></div></button></div><div id="easel-output" class="bg-black/30 border border-gray-700 w-full aspect-square rounded-lg flex items-center justify-center transition-all duration-500 relative"><p id="easel-placeholder" class="text-gray-500">Image will be generated here.</p><img id="easel-image" src="" class="hidden w-full h-full object-contain rounded-lg"/><div id="easel-output-spinner" class="spinner hidden"></div><button id="easel-download-btn" class="hidden absolute bottom-4 right-4 bg-black/50 hover:bg-black/80 text-white font-bold py-2 px-4 rounded-lg btn-primary">Download</button></div></div></div></div>
+            <div id="planner-interface" class="interface-panel hidden h-full overflow-y-auto scrollable-content"><div class="p-4 md:p-8 flex items-center justify-center min-h-full"><div class="w-full max-w-4xl glass-panel p-4 md:p-8 rounded-2xl"><h2 class="text-3xl md:text-4xl font-bold mb-2 text-center text-indigo-400">Project Planner</h2><p class="text-gray-400 mb-6 text-center">✨ Describe your project, and Aron will generate a plan.</p><textarea id="planner-prompt" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4" rows="4" placeholder="e.g., Plan a marketing campaign for a new mobile app."></textarea><button id="planner-generate-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-5 rounded-lg w-full btn-primary mb-4">Generate Plan</button><div id="planner-output" class="w-full bg-gray-800/50 border border-gray-700 p-4 rounded-lg min-h-[200px] scrollable-content overflow-y-auto"></div></div></div></div>
+            <div id="code-interface" class="interface-panel hidden h-full overflow-y-auto scrollable-content"><div class="p-4 md:p-8 flex items-center justify-center min-h-full"><div class="w-full max-w-4xl mx-auto glass-panel p-8 rounded-2xl"><h2 class="text-4xl font-bold mb-2 text-indigo-400">Code Companion</h2><p class="text-gray-400 mb-6">✨ Your AI pair programmer. Describe what you want to build.</p><textarea id="code-prompt" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="3" placeholder="e.g., A python function that returns the factorial of a number"></textarea><div class="flex items-center space-x-2 my-4"><select id="code-language" class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"><option>JavaScript</option><option>Python</option><option>HTML</option><option>CSS</option><option>SQL</option></select><button id="code-generate-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-5 rounded-lg flex items-center justify-center w-36 btn-primary"><span id="code-text">Generate</span><div id="code-spinner" class="spinner hidden"></div></button></div><div class="relative"><pre id="code-output" class="code-output p-4 rounded-lg h-96 overflow-y-auto border border-gray-700 scrollable-content"></pre><button id="code-copy-btn" class="hidden absolute top-4 right-4 bg-black/50 hover:bg-black/80 text-white font-bold py-1 px-3 rounded-lg btn-primary">Copy</button></div></div></div></div>
+            <div id="recipe-interface" class="interface-panel hidden h-full overflow-y-auto scrollable-content"><div class="p-4 md:p-8 flex items-center justify-center min-h-full"><div class="w-full max-w-4xl glass-panel p-4 md:p-8 rounded-2xl"><h2 class="text-3xl md:text-4xl font-bold mb-2 text-center text-indigo-400">Recipe Creator</h2><p class="text-gray-400 mb-6 text-center">✨ List your ingredients, and Aron will create a recipe.</p><textarea id="recipe-prompt" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4" rows="4" placeholder="e.g., chicken breast, rice, broccoli, soy sauce"></textarea><button id="recipe-generate-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-5 rounded-lg w-full btn-primary mb-4">Create Recipe</button><div id="recipe-output" class="w-full bg-gray-800/50 border border-gray-700 p-4 rounded-lg min-h-[200px] scrollable-content overflow-y-auto"></div></div></div></div>
+            <div id="docu-synth-interface" class="interface-panel hidden h-full overflow-y-auto scrollable-content"><div class="p-8 flex items-center justify-center min-h-full"><div class="w-full max-w-4xl glass-panel p-8 rounded-2xl"><h2 class="text-4xl font-bold mb-2 text-center text-indigo-400">Docu-Synth</h2><p class="text-gray-400 mb-6 text-center">✨ Upload a text file and get a concise AI-powered summary.</p><input type="file" id="doc-upload" class="hidden" accept=".txt"><button id="doc-upload-btn" class="block mx-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg mb-6 btn-primary">Upload .txt File</button><div id="doc-output" class="hidden w-full bg-gray-800/50 border border-gray-700 p-6 rounded-lg min-h-[200px] scrollable-content overflow-y-auto"><h3 class="font-bold text-xl mb-3 text-indigo-400">Summary</h3><p id="doc-summary" class="text-gray-300 text-left"></p></div><div id="doc-spinner" class="spinner hidden mx-auto"></div></div></div></div>
+            <div id="translator-interface" class="interface-panel hidden h-full overflow-y-auto scrollable-content"><div class="p-8 flex items-center justify-center min-h-full"><div class="w-full max-w-4xl glass-panel p-8 rounded-2xl"><h2 class="text-4xl font-bold mb-2 text-center text-indigo-400">Global Translator</h2><p class="text-gray-400 mb-6 text-center">✨ Translate text into any language with AI precision.</p><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div class="h-full flex flex-col"><label class="block mb-2 text-gray-400">Original Text</label><textarea id="translate-input" class="w-full flex-1 bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea></div><div class="h-full flex flex-col"><label class="block mb-2 text-gray-400">Translated Text</label><textarea id="translate-output" class="w-full flex-1 bg-gray-800 border border-gray-700 rounded-lg p-3 text-white" readonly></textarea></div></div><div class="flex items-center justify-center space-x-4 mt-4"><select id="translate-language" class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"><option>Spanish</option><option>French</option><option>German</option><option>Japanese</option><option>Chinese</option><option>Russian</option></select><button id="translate-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-5 rounded-lg flex items-center justify-center w-36 btn-primary"><span id="translate-text">Translate</span><div id="translate-spinner" class="spinner hidden"></div></button></div></div></div></div>
+            <div id="sentiment-interface" class="interface-panel hidden h-full overflow-y-auto scrollable-content"><div class="p-8 flex items-center justify-center min-h-full"><div class="w-full max-w-4xl glass-panel p-8 rounded-2xl"><h2 class="text-4xl font-bold mb-2 text-center text-indigo-400">Sentiment Analyzer</h2><p class="text-gray-400 mb-6 text-center">✨ Analyze the sentiment of any text.</p><textarea id="sentiment-input" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4" rows="6" placeholder="Enter text to analyze..."></textarea><button id="sentiment-analyze-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-5 rounded-lg w-full btn-primary mb-4">Analyze</button><div id="sentiment-output" class="hidden w-full text-center"><p class="text-2xl font-bold" id="sentiment-result"></p><p class="text-lg text-gray-400" id="sentiment-score"></p></div></div></div></div>
+            <div id="email-interface" class="interface-panel hidden h-full overflow-y-auto scrollable-content"><div class="p-8 flex items-center justify-center min-h-full"><div class="w-full max-w-4xl glass-panel p-8 rounded-2xl"><h2 class="text-4xl font-bold mb-2 text-center text-indigo-400">Email Writer</h2><p class="text-gray-400 mb-6 text-center">✨ Let Aron draft professional emails for you.</p><div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4"><input type="text" id="email-recipient" class="bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Recipient"><select id="email-tone" class="bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"><option>Professional</option><option>Friendly</option><option>Urgent</option><option>Formal</option></select></div><textarea id="email-prompt" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4" rows="4" placeholder="Email objective, e.g., Ask for a meeting next week to discuss the project proposal."></textarea><button id="email-generate-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-5 rounded-lg w-full btn-primary mb-4">Draft Email</button><div id="email-output" class="w-full bg-gray-800/50 border border-gray-700 p-4 rounded-lg min-h-[200px] scrollable-content overflow-y-auto"></div></div></div></div>
+            <div id="settings-interface" class="interface-panel hidden h-full overflow-y-auto scrollable-content"><div class="p-4 md:p-8 flex items-center justify-center min-h-full"><div class="w-full max-w-2xl mx-auto glass-panel p-8 rounded-2xl"><h2 class="text-4xl font-bold mb-6 text-indigo-400">Settings</h2><div class="space-y-6"><div class="flex justify-between items-center"><label for="typing-toggle" class="text-lg">AI Typing Effect</label><input type="checkbox" id="typing-toggle" class="form-checkbox h-5 w-5 text-indigo-600 bg-gray-700 border-gray-600 rounded focus:ring-indigo-500" checked/></div><div class="flex flex-col space-y-2"><label for="font-size-slider" class="text-lg">Font Size: <span id="font-size-value">16px</span></label><input type="range" id="font-size-slider" min="12" max="20" value="16" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"></div><div class="flex flex-col space-y-2"><label for="glass-blur-slider" class="text-lg">Glass Blur: <span id="glass-blur-value">12px</span></label><input type="range" id="glass-blur-slider" min="0" max="24" value="12" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"></div><div class="flex flex-col space-y-2"><label class="text-lg">Theme Color</label><div id="theme-picker" class="flex space-x-3"><button class="theme-btn w-8 h-8 rounded-full bg-indigo-600 border-2 border-white" data-color="#4f46e5"></button><button class="theme-btn w-8 h-8 rounded-full bg-pink-600" data-color="#db2777"></button><button class="theme-btn w-8 h-8 rounded-full bg-teal-600" data-color="#0d9488"></button><button class="theme-btn w-8 h-8 rounded-full bg-amber-500" data-color="#f59e0b"></button></div></div><div class="flex flex-col space-y-2"><label for="persona-select" class="text-lg">Aron's Persona</label><select id="persona-select" class="bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"><option value="professional">Professional Assistant</option><option value="creative">Creative Partner</option><option value="humorous">Humorous Sidekick</option><option value="socratic">Socratic Tutor</option></select></div><div class="flex space-x-4"><button id="persona-apply-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg btn-primary">Apply & Reset Chat</button></div><div class="flex space-x-4"><button id="export-chat-btn" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded-lg btn-primary">Export Chat</button><button id="export-settings-btn" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded-lg btn-primary">Export Settings</button></div><div class="flex space-x-4"><input type="file" id="import-settings-input" class="hidden" accept=".json"><button id="import-settings-btn" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded-lg btn-primary">Import Settings</button><button id="reset-all-btn" class="w-full bg-red-800 hover:bg-red-900 text-white font-bold py-2 px-4 rounded-lg btn-primary">Reset All</button></div></div></div></div></div>
         </main>
     </div>
 
@@ -254,11 +290,11 @@
             const overlay = document.getElementById('mobile-menu-overlay');
             const mobileHeaderTitle = document.getElementById('mobile-header-title');
             const clearChatBtnIcon = document.getElementById('clear-chat-btn-icon');
+            const clearChatBtnIconMobile = document.getElementById('clear-chat-btn-icon-mobile');
             const customModal = document.getElementById('custom-modal');
             const modalConfirmBtn = document.getElementById('modal-confirm-btn');
             const modalCancelBtn = document.getElementById('modal-cancel-btn');
             
-            // ... other element references
             const chatInput = document.getElementById('chat-input'), sendBtn = document.getElementById('send-btn'), sendText = document.getElementById('send-text'), sendSpinner = document.getElementById('send-spinner'), chatContainer = document.querySelector('.chat-container'), smartReplyContainer = document.getElementById('smart-reply-container');
             const visionUploadBtn = document.getElementById('vision-upload-btn'), visionUpload = document.getElementById('vision-upload'), visionPreview = document.getElementById('vision-preview'), visionPlaceholder = document.getElementById('vision-placeholder'), visionPrompt = document.getElementById('vision-prompt'), visionAskBtn = document.getElementById('vision-ask-btn'), visionAnswer = document.getElementById('vision-answer');
             const easelPrompt = document.getElementById('easel-prompt'), easelGenerateBtn = document.getElementById('easel-generate-btn'), easelText = document.getElementById('easel-text'), easelSpinner = document.getElementById('easel-spinner'), easelOutput = document.getElementById('easel-output'), easelPlaceholder = document.getElementById('easel-placeholder'), easelImage = document.getElementById('easel-image'), easelOutputSpinner = document.getElementById('easel-output-spinner'), easelDownloadBtn = document.getElementById('easel-download-btn');
@@ -317,7 +353,7 @@
             Object.keys(allTabs).forEach(key => allTabs[key].tab.addEventListener('click', (e) => { e.preventDefault(); switchTab(key); }));
             
             // --- Gemini API Calls ---
-            const GEMINI_API_KEY = "AIzaSyC_HJOIkEEcifalbQM3eNOCMxls"; // Provided by environment
+            const GEMINI_API_KEY = ""; // Provided by environment
             async function callGemini(payload, model = 'gemini-2.0-flash') {
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
                 try {
@@ -432,12 +468,14 @@
                 }
             }
             
-            clearChatBtnIcon.addEventListener('click', () => {
+            const clearChatAction = () => {
                 showModal('Clear Chat History?', 'This will permanently delete your current conversation.', () => {
                     localStorage.removeItem('aronChatHistory');
                     initializeChat(true);
                 });
-            });
+            };
+            clearChatBtnIcon.addEventListener('click', clearChatAction);
+            clearChatBtnIconMobile.addEventListener('click', clearChatAction);
 
             // --- Vision Functionality ---
             visionUploadBtn.addEventListener('click', () => visionUpload.click());
